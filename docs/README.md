@@ -199,11 +199,19 @@ matrix, threat model, direct test matrix, deployment evidence plan, and
 claim-to-code matrix. Phase 4 must replace this section with the full locked
 specification before any contract code is written.
 
+## Frontend baseline
+
+Phase 3A and 3B local frontend baseline is recorded in
+`docs/evidence/local/frontend-baseline.md`. The frontend route map is built,
+tested, and production-built behind the typed adapter boundary. This remains
+local frontend evidence only and does not prove browser-wallet writes,
+Studionet reads, deployment, or live app availability.
+
 ## Honest limitations
 
-At SELECTED status, TraceSettle has approved design and frontend design system
-artifacts only. It does not yet claim implemented frontend code, contract code,
-local test success, Studionet deployment, browser-wallet evidence, public repo,
+At SELECTED status, TraceSettle has approved design, frontend design system
+artifacts, and local frontend baseline evidence only. It does not yet claim
+contract code, Studionet deployment, browser-wallet evidence, public repo,
 Vercel deployment, lifecycle evidence, Portal submission, or external adoption.
 
 ## Kill criteria
