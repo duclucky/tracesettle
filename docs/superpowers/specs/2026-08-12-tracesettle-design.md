@@ -169,26 +169,119 @@ trust or enforcement boundary.
 
 ## Product information architecture
 
-TraceSettle is a working dApp, not a landing page or contract console.
+TraceSettle is a working dApp, not a landing page, method list, contract console,
+or reviewer dashboard. The frontend must let a real sponsor or provider complete
+the workflow journey in product language, while hiding validator and storage
+internals unless the user opens verification details.
 
-### Workflow home
+### Design read and UI source of truth
 
-Shows workflows relevant to the connected address, their plain-language state,
-the user's role, and the one next legal action. It handles no-wallet,
-wrong-network, loading, empty, and read-error states.
+Reading this as: a B2B operations web app for technical workflow sponsors and
+step providers, with a trust-first, work-focused product language, leaning toward
+React plus Tailwind/Radix-style primitives rather than a marketing landing page.
 
-### Workflow workspace
+The `ui-ux-design-pro` engine was run for TraceSettle with React, variance 4,
+motion 3, and density 7. It produced an operations-oriented base system, but
+the final product direction overrides the generated Calistoga/Inter, heavy
+shadow, mobile-dashboard, and gradient recommendations because they conflict
+with the project brief and anti-default taste rules. Phase 3A must implement:
 
-Shows the objective, step dependency path, provider promises, evidence status,
-review progress, and user consequence. Sponsor and provider controls appear only
-for the connected role and legal canonical state. Technical hashes, attempt IDs,
-and raw enums stay inside a restrained verification disclosure.
+- neutral light operations theme using the engine's navy/azure trust palette
+  only as a restrained accent;
+- Geist Sans or an equivalent non-Inter system face for UI, plus JetBrains Mono
+  only for addresses, IDs, and optional verification data;
+- one 8px radius system for controls and repeated workflow items;
+- compact page chrome, persistent navigation, and dense but readable workflow
+  tables/cards;
+- subtle state motion only for navigation, submitted/finality transitions, and
+  row expansion; all motion must respect reduced-motion;
+- no AI-purple gradients, no dark mesh hero, no faux wallet balances, no
+  simulated finality, no localStorage canonical state, and no generic lorem
+  content.
 
-### Credits and withdrawal
+### Route map
 
-Shows withdrawable GEN, the workflow sources of credit, pending finality, and a
-single withdrawal action. It never displays simulated balances, fees, gas, or
-finality.
+All routes are reachable through persistent navigation and must have no-wallet,
+wrong-network, loading, empty, read-error, submitted, finalized, failed, and
+retry treatments where that state is relevant.
+
+1. `/` - Entry and role selection
+   States the value in sponsor/provider language, shows the current connection
+   status, and routes the user into either workflow creation or assigned work.
+   It is not a marketing-only hero; its primary controls are `Create workflow`
+   and `Review assigned steps` when the connected wallet makes those legal.
+
+2. `/workflows` - Workflow inbox
+   Shows workflows relevant to the connected address, role, plain-language
+   status, funding/bond posture in GEN, next legal action, and filters for
+   Active, Needs action, Retryable, Settled, and Cancelled. Empty state explains
+   what the connected user can do next without inventing sample onchain data.
+
+3. `/workflows/new` - Sponsor setup flow
+   A multi-step sponsor flow for objective, bounded step DAG, provider
+   addresses, promises, evidence host policy, fee weights, and 2 GEN funding.
+   It validates DAG shape and missing required fields client-side, then the
+   contract remains authoritative. It never claims creation until finality is
+   confirmed and canonical state is reloaded.
+
+4. `/workflows/:id` - Workflow room
+   The main task room. Shows objective, dependency graph, each provider promise,
+   evidence readiness, review state, retry/cancel availability, and the user's
+   immediate consequence. Sponsor controls and provider controls are role and
+   state gated. Raw enums, hashes, attempt IDs, and fetched-source details stay
+   in a collapsed verification panel.
+
+5. `/workflows/:id/evidence/:stepId` - Provider evidence submission
+   Lets the assigned provider inspect upstream artifacts, enter the artifact
+   URL and digest, post the 1 GEN bond if needed, and submit or replace evidence
+   before lock. It must clearly distinguish wallet prompt, transaction submitted,
+   accepted/decided, finalized, failed, and retryable outcomes.
+
+6. `/credits` - Credits and withdrawal
+   Shows canonical withdrawable GEN, credit source workflows, pending finality,
+   and the single legal withdrawal action. It never displays simulated wallet
+   balances, gas, or fees. After withdrawal finality, it reloads canonical
+   credit and workflow state.
+
+7. `/settings` - Wallet and network
+   Shows connected address, Studionet status, contract address configuration,
+   preferred injected provider, and honest missing-configuration messages. It
+   may store harmless UI provider preference only, never canonical workflow or
+   finance state.
+
+8. `/help` - Verification guide
+   Explains in user terms what validators inspect, why `UNVERIFIABLE` is
+   non-penalizing, what evidence authenticity means in V1, and what the app
+   does not prove. It links to Explorer or technical details without becoming a
+   reviewer submission page.
+
+### Primary journeys
+
+- Sponsor: connect wallet -> create workflow -> fund 2 GEN -> wait for provider
+  evidence -> lock evidence -> request review -> see finalized settlement ->
+  withdraw refund or residual credit.
+- Provider: connect wallet -> open assigned workflow -> accept step with 1 GEN
+  bond -> inspect dependencies -> submit evidence -> track review/finality ->
+  withdraw earned fee, returned bond, or compensation.
+- Returning user: open inbox -> filter needs-action/retryable -> resume the
+  legal next step -> verify consequence in the workflow room or credits page.
+
+### Visibility and action rules
+
+- `USER_PRIMARY`: workflow objective, role, user-facing status, next legal
+  action, GEN amounts, evidence readiness, final consequence, withdrawable
+  credit, recoverable error.
+- `USER_CONTEXTUAL`: step dependency graph, provider promises, source coverage,
+  retry reason, cancellation reason, explorer link, current connected provider.
+- `SYSTEM_ONLY`: raw storage layout, validator prompt internals, raw leader
+  JSON, internal attempt counters, unbounded fetched payloads, submission
+  packet material, private keys, gas estimates presented as fact.
+
+Visible controls must map to provisional contract capabilities: create funded
+workflow, add/lock steps before activation, activate, accept step with 1 GEN,
+submit/replace evidence before evidence lock, lock evidence, request review,
+retry unverifiable attempt, cancel in safe states, and withdraw canonical
+credit. Any control without a legal contract path is removed before Phase 3B.
 
 The UI must represent wallet prompt, submitted, accepted/decided, finalized,
 failed, and retry states. It reloads canonical workflow and credit views after
@@ -267,4 +360,3 @@ arbitrary workflow size, external adoption, browser-wallet evidence, Studionet
 deployment, another network, Portal acceptance, or production-grade insurance.
 Those claims remain absent until the corresponding code, tests, canonical
 network state, browser evidence, and public artifacts exist.
-
