@@ -1,0 +1,114 @@
+{
+  "network": "studionet",
+  "contract_address": "0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313",
+  "workflow_id": "trace-live-20260812-c",
+  "sponsor": "0xC495ef51618D03267A1f227aFe5b27B38c748272",
+  "provider": "0x45aD397c438397A702B53a7499a78D08961D39Db",
+  "evidence": {
+    "step-plan": {
+      "url": "https://gist.githubusercontent.com/duclucky/a50b8d34dfe2e57f3e603910a7f17d72/raw/bbebb23e63c818c5b920d4212a1d1448dcf5ac36/tracesettle-step-plan.txt",
+      "digest": "sha256:8a423d978dcee3b4a6fdb6bc1d75981101b14281058e9b7b227d1fada02756bf"
+    },
+    "step-build": {
+      "url": "https://gist.githubusercontent.com/duclucky/a50b8d34dfe2e57f3e603910a7f17d72/raw/85edad93c9eb26cedfa10da2dc62c68d86923edf/tracesettle-step-build.txt",
+      "digest": "sha256:d63d0e3b1fc6675d36627563f2c7b75c44fbc22e01142747731cf53e79c3070c"
+    }
+  },
+  "records": [
+    {
+      "label": "accept step-build",
+      "functionName": "accept_step",
+      "tx_hash": "0x1a90ac8f88dfba2086c44258ffe7a23d914a7b5851a70b55e94b14130bd4c92b",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "1 GEN"
+    },
+    {
+      "label": "submit evidence step-plan",
+      "functionName": "submit_evidence",
+      "tx_hash": "0x031182fd89200c67f67c0f0b8fb921841f8e06965e4d5b1fd5a92b4ff031a479",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "0 GEN"
+    },
+    {
+      "label": "submit evidence step-build",
+      "functionName": "submit_evidence",
+      "tx_hash": "0x4abdcbee01562f457a9392027dfb39db00fb0282cd4bc950642013726b8b9817",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "0 GEN"
+    },
+    {
+      "label": "lock evidence",
+      "functionName": "lock_evidence",
+      "tx_hash": "0x56ac52cf00865d5693c12f4ae9323e31abc19405ea9014457d5c3bf428bd3ee6",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "0 GEN"
+    },
+    {
+      "label": "request review",
+      "functionName": "request_review",
+      "tx_hash": "0x98b6f0adc02be2bab4f5ab76234b17294ff4de361cf662434f53882865961e0d",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "0 GEN"
+    },
+    {
+      "label": "withdraw provider credit",
+      "functionName": "withdraw_credit",
+      "tx_hash": "0x6bcba3f90caf6441991c136ce23cb42e6b335d0ce6d1cd3c2696585838a9131d",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "0 GEN"
+    }
+  ],
+  "final_workflow": {
+    "cancelled": false,
+    "objective": "Settle a two-step travel planning workflow from public evidence.",
+    "pool": "0",
+    "settled": true,
+    "sponsor": "0xC495ef51618D03267A1f227aFe5b27B38c748272",
+    "status": "SETTLED"
+  },
+  "final_attempt": {
+    "consequence_class": "PAY_ALL",
+    "coverage": "COMPLETE",
+    "finalized": true,
+    "reason": "All steps have been satisfied with complete coverage and no faults or downstream blocking detected.",
+    "root_cause_steps": "",
+    "verdict": "SUCCESS"
+  },
+  "final_step_ids": [
+    "step-plan",
+    "step-build"
+  ],
+  "final_steps": {
+    "step-plan": {
+      "accepted": true,
+      "bond": "0",
+      "dependencies": "none",
+      "digest": "sha256:8a423d978dcee3b4a6fdb6bc1d75981101b14281058e9b7b227d1fada02756bf",
+      "evidence_url": "https://gist.githubusercontent.com/duclucky/a50b8d34dfe2e57f3e603910a7f17d72/raw/bbebb23e63c818c5b920d4212a1d1448dcf5ac36/tracesettle-step-plan.txt",
+      "promise": "Produce a bounded itinerary that satisfies the sponsor objective.",
+      "provider": "0x45aD397c438397A702B53a7499a78D08961D39Db",
+      "step_class": "SATISFIED"
+    },
+    "step-build": {
+      "accepted": true,
+      "bond": "0",
+      "dependencies": "step-plan",
+      "digest": "sha256:d63d0e3b1fc6675d36627563f2c7b75c44fbc22e01142747731cf53e79c3070c",
+      "evidence_url": "https://gist.githubusercontent.com/duclucky/a50b8d34dfe2e57f3e603910a7f17d72/raw/85edad93c9eb26cedfa10da2dc62c68d86923edf/tracesettle-step-build.txt",
+      "promise": "Use the trip plan to produce booking-ready handoff notes.",
+      "provider": "0x45aD397c438397A702B53a7499a78D08961D39Db",
+      "step_class": "SATISFIED"
+    }
+  },
+  "provider_credit_before_withdraw_gen": "4 GEN",
+  "provider_credit_after_withdraw_gen": "0 GEN",
+  "lifecycle_result": "SUCCESS",
+  "captured_at": "2026-08-12T16:22:08.684Z",
+  "evidence_limit": "allowlisted lifecycle fields only; full receipts intentionally not stored"
+}

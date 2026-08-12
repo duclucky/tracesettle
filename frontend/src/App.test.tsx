@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AppRoutes } from "./App";
 
 const routeHeadings = [
@@ -16,6 +16,14 @@ const routeHeadings = [
 ] as const;
 
 describe("TraceSettle route map", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_CONTRACT_ADDRESS", "");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it.each(routeHeadings)("renders %s as %s", (route, heading) => {
     render(
       <MemoryRouter initialEntries={[route]}>

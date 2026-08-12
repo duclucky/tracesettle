@@ -1,0 +1,37 @@
+{
+  "network": "studionet",
+  "commit": "39027f2806898defcb44bdbc5288f4e70227df78",
+  "deployer": "0xC495ef51618D03267A1f227aFe5b27B38c748272",
+  "contract": {
+    "path": "contracts/tracesettle.py",
+    "source_sha256": "c0820ea0ef65d9f12864ccbd63b09a8933dd15cef90d1e57e87f87506406efbe",
+    "depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6"
+  },
+  "tx_hash": "0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d",
+  "status": "FINALIZED",
+  "consensus_result": "MAJORITY_AGREE",
+  "deployment_result": "SUCCESS",
+  "contract_address": "0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313",
+  "schema_verified": true,
+  "method_count": 16,
+  "methods": [
+    "accept_step",
+    "activate_workflow",
+    "add_step",
+    "cancel_workflow",
+    "create_workflow",
+    "get_attempt",
+    "get_credit",
+    "get_step",
+    "get_workflow",
+    "get_workflow_step_ids",
+    "list_workflows",
+    "lock_evidence",
+    "request_review",
+    "retry_review",
+    "submit_evidence",
+    "withdraw_credit"
+  ],
+  "captured_at": "2026-08-12T15:41:17.010Z",
+  "evidence_limit": "allowlisted deployment identity only; full receipt intentionally not stored"
+}

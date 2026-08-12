@@ -1,4 +1,5 @@
 import { chains, createClient } from "genlayer-js";
+import { CalldataAddress } from "genlayer-js/types";
 import type {
   CreateWorkflowInput,
   CreditsView,
@@ -47,6 +48,12 @@ function genFromBaseUnits(value: unknown): number {
     return 0;
   }
   return Number(BigInt(value) / GEN);
+}
+
+function calldataAddress(address: string): CalldataAddress {
+  const hex = address.startsWith("0x") ? address.slice(2) : address;
+  const bytes = Uint8Array.from(hex.match(/.{1,2}/g)?.map((item) => Number.parseInt(item, 16)) ?? []);
+  return new CalldataAddress(bytes);
 }
 
 function toWorkflowSummary(id: string, raw: ContractRead): WorkflowSummary | undefined {
@@ -197,7 +204,7 @@ export function createGenLayerTraceSettleAdapter(options: AdapterOptions): Trace
         await client.readContract({
           address: options.address,
           functionName: "get_credit",
-          args: [address],
+          args: [calldataAddress(address)],
           jsonSafeReturn: true
         })
       );
