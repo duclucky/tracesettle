@@ -102,6 +102,29 @@ describe("TraceSettle route map", () => {
     );
   });
 
+  it("restores an already-authorized wallet account after reload", async () => {
+    const request = vi.fn(async ({ method }: { method: string }) => {
+      if (method === "eth_accounts") {
+        return ["0xC495ef51618D03267A1f227aFe5b27B38c748272"];
+      }
+      if (method === "eth_requestAccounts") {
+        throw new Error("unexpected wallet prompt");
+      }
+      return undefined;
+    });
+    vi.stubGlobal("ethereum", { request });
+
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText("0xC495...8272")).toBeInTheDocument();
+    expect(screen.getByText("Wallet connected")).toHaveAttribute("aria-live", "polite");
+    expect(request.mock.calls[0][0]).toEqual({ method: "eth_accounts" });
+  });
+
   it("filters workflow rows and exposes the active filter state", async () => {
     const user = userEvent.setup();
     render(

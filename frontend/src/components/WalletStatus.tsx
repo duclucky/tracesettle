@@ -4,6 +4,7 @@ import {
   connectInjectedWallet,
   detectInjectedWallet,
   discoverInjectedWallet,
+  readAuthorizedWallet,
   shortenAddress,
   type WalletEnvironment,
   walletRequestErrorMessage
@@ -21,9 +22,25 @@ export function WalletStatus() {
 
   useEffect(() => {
     let active = true;
-    void discoverInjectedWallet(environment).then((result) => {
-      if (active) {
-        setStatusMessage(result.label);
+    void discoverInjectedWallet(environment).then(async (result) => {
+      if (!active) {
+        return;
+      }
+      setStatusMessage(result.label);
+      if (!result.provider) {
+        return;
+      }
+      try {
+        const connection = await readAuthorizedWallet(result.provider);
+        if (!active || !connection.address) {
+          return;
+        }
+        setAddress(connection.address);
+        setStatusMessage("Wallet connected");
+      } catch {
+        if (active) {
+          setAddress(undefined);
+        }
       }
     });
     return () => {
