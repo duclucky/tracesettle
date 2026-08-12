@@ -11,9 +11,17 @@ import { TransactionState } from "../components/TransactionState";
 import { credits } from "../domain/fixtures";
 import type { CreditsView } from "../domain/types";
 
+const emptyCredits: CreditsView = {
+  address: "",
+  totalAvailableGen: 0,
+  lines: []
+};
+
 export function CreditsPage() {
   const runtime = resolveRuntimeConfig(import.meta.env);
-  const [view, setView] = useState<CreditsView>(credits);
+  const [view, setView] = useState<CreditsView>(
+    runtime.mode === "live" ? emptyCredits : credits
+  );
   const [readState, setReadState] = useState(
     runtime.mode === "live"
       ? "Connect a browser wallet to read canonical credit for that account."

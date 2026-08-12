@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { createGenLayerTraceSettleAdapter } from "../adapters/genlayerAdapter";
+import { isActionVisible } from "../adapters/contractAdapter";
 import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
 import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { StatusBadge } from "../components/StatusBadge";
@@ -12,7 +13,9 @@ export function WorkflowRoomPage() {
   const { workflowId } = useParams();
   const runtime = resolveRuntimeConfig(import.meta.env);
   const previewWorkflow = workflows.find((item) => item.id === workflowId) ?? workflows[0];
-  const [workflow, setWorkflow] = useState<WorkflowSummary>(previewWorkflow);
+  const [workflow, setWorkflow] = useState<WorkflowSummary | undefined>(
+    runtime.mode === "live" ? undefined : previewWorkflow
+  );
   const [readState, setReadState] = useState(
     runtime.mode === "live" ? "Loading canonical workflow..." : runtime.reason
   );
@@ -55,12 +58,17 @@ export function WorkflowRoomPage() {
   return (
     <section className="page">
       <div className="page-header">
-        <span className="page-kicker">Workflow {workflow.id}</span>
+        <span className="page-kicker">
+          {workflow ? `Workflow ${workflow.id}` : "Canonical workflow"}
+        </span>
         <h1>Workflow room</h1>
-        <p className="lead">{workflow.objective}</p>
+        <p className="lead">
+          {workflow?.objective ?? "Waiting for canonical workflow state."}
+        </p>
       </div>
 
-      <div className="grid two">
+      {workflow ? (
+        <div className="grid two">
         <section className="panel stack">
           <aside className={runtime.mode === "live" ? "notice" : "notice danger-note"}>
             <strong>{runtime.mode === "live" ? "Contract read" : "Preview read"}</strong>
@@ -97,24 +105,42 @@ export function WorkflowRoomPage() {
             <h2>Next legal action</h2>
             <p>{workflow.nextAction}</p>
             <div className="actions">
-              <LiveTraceSettleAction
-                className="button primary"
-                action={(adapter) => adapter.lockEvidence(workflow.id)}
-              >
-                Lock evidence
-              </LiveTraceSettleAction>
-              <LiveTraceSettleAction
-                className="button secondary"
-                action={(adapter) => adapter.requestReview(workflow.id)}
-              >
-                Request review
-              </LiveTraceSettleAction>
-              <LiveTraceSettleAction
-                className="button danger"
-                action={(adapter) => adapter.cancelWorkflow(workflow.id)}
-              >
-                Cancel safely
-              </LiveTraceSettleAction>
+              {isActionVisible({
+                role: workflow.role,
+                status: workflow.status,
+                action: "lockEvidence"
+              }) && (
+                <LiveTraceSettleAction
+                  className="button primary"
+                  action={(adapter) => adapter.lockEvidence(workflow.id)}
+                >
+                  Lock evidence
+                </LiveTraceSettleAction>
+              )}
+              {isActionVisible({
+                role: workflow.role,
+                status: workflow.status,
+                action: "requestReview"
+              }) && (
+                <LiveTraceSettleAction
+                  className="button secondary"
+                  action={(adapter) => adapter.requestReview(workflow.id)}
+                >
+                  Request review
+                </LiveTraceSettleAction>
+              )}
+              {isActionVisible({
+                role: workflow.role,
+                status: workflow.status,
+                action: "cancelWorkflow"
+              }) && (
+                <LiveTraceSettleAction
+                  className="button danger"
+                  action={(adapter) => adapter.cancelWorkflow(workflow.id)}
+                >
+                  Cancel safely
+                </LiveTraceSettleAction>
+              )}
             </div>
           </section>
           <TransactionState stage={workflow.status === "RETRYABLE" ? "retryable" : "idle"} />
@@ -126,7 +152,13 @@ export function WorkflowRoomPage() {
             </p>
           </details>
         </aside>
-      </div>
+        </div>
+      ) : (
+        <aside className="notice" aria-live="polite">
+          <strong>Contract read</strong>
+          <p>{readState}</p>
+        </aside>
+      )}
     </section>
   );
 }

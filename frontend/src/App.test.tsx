@@ -102,6 +102,158 @@ describe("TraceSettle route map", () => {
     );
   });
 
+  it("filters workflow rows and exposes the active filter state", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/workflows"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("button", { name: "Active" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(screen.queryByText("Settle a DAO scheduler workflow after one provider introduced a material fault.")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Settled" }));
+
+    expect(screen.getByRole("button", { name: "Settled" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(
+      screen.getByText(
+        "Settle a DAO scheduler workflow after one provider introduced a material fault."
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        "Produce a verified travel-planning workflow with itinerary, reservation handoff, and cancellation notes."
+      )
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Cancelled" }));
+
+    expect(screen.getByRole("heading", { name: "No workflows yet" })).toBeInTheDocument();
+  });
+
+  it("blocks workflow creation until the objective is present", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/workflows/new"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    const objective = screen.getByRole("textbox", { name: "Workflow objective" });
+    const submit = screen.getByRole("button", { name: "Submit workflow transaction" });
+    expect(submit).toBeEnabled();
+
+    await user.clear(objective);
+    expect(submit).toBeDisabled();
+
+    await user.type(objective, "Settle a bounded provider workflow");
+    expect(submit).toBeEnabled();
+  });
+
+  it("requires step acceptance and valid evidence before submission", async () => {
+    const user = userEvent.setup();
+    const evidenceBuild = render(
+      <MemoryRouter initialEntries={["/workflows/trace-1001/evidence/step-build"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("button", { name: "Accept step with 1 GEN" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit evidence transaction" })).toBeDisabled();
+
+    evidenceBuild.unmount();
+    render(
+      <MemoryRouter initialEntries={["/workflows/trace-1001/evidence/step-plan"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    const artifactUrl = screen.getByRole("textbox", { name: "Artifact URL" });
+    const digest = screen.getByRole("textbox", { name: "Artifact digest" });
+    const submit = screen.getByRole("button", { name: "Submit evidence transaction" });
+    expect(submit).toBeEnabled();
+
+    await user.clear(artifactUrl);
+    expect(submit).toBeDisabled();
+    await user.type(artifactUrl, "https://evidence.example/plan.json");
+    await user.clear(digest);
+    expect(submit).toBeDisabled();
+    await user.type(digest, "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    expect(submit).toBeEnabled();
+  });
+
+  it("shows only legal workflow actions for the current role and state", () => {
+    const workflowOpen = render(
+      <MemoryRouter initialEntries={["/workflows/trace-1001"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("button", { name: "Lock evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cancel safely" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Request review" })).not.toBeInTheDocument();
+
+    workflowOpen.unmount();
+    render(
+      <MemoryRouter initialEntries={["/workflows/trace-0998"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole("button", { name: "Lock evidence" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Request review" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cancel safely" })).not.toBeInTheDocument();
+  });
+
+  it("does not expose preview workflows or credits while live reads are pending", () => {
+    vi.stubEnv("VITE_CONTRACT_ADDRESS", "0x1234567890123456789012345678901234567890");
+    const inbox = render(
+      <MemoryRouter initialEntries={["/workflows"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.queryByText(
+        "Produce a verified travel-planning workflow with itinerary, reservation handoff, and cancellation notes."
+      )
+    ).not.toBeInTheDocument();
+
+    inbox.unmount();
+    const creditView = render(
+      <MemoryRouter initialEntries={["/credits"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "0 GEN available" })).toBeInTheDocument();
+    expect(screen.queryByText("Returned provider bond")).not.toBeInTheDocument();
+
+    creditView.unmount();
+    const workflowRoom = render(
+      <MemoryRouter initialEntries={["/workflows/trace-1001"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+    expect(screen.getByText("Waiting for canonical workflow state.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Lock evidence" })).not.toBeInTheDocument();
+
+    workflowRoom.unmount();
+    render(
+      <MemoryRouter initialEntries={["/workflows/trace-1001/evidence/step-plan"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+    expect(screen.queryByRole("textbox", { name: "Artifact URL" })).not.toBeInTheDocument();
+  });
+
   it("blocks live actions honestly until a contract address is configured", async () => {
     const user = userEvent.setup();
     render(

@@ -11,6 +11,7 @@ import { TransactionState, type TransactionStage } from "./TransactionState";
 interface LiveTraceSettleActionProps {
   children: string;
   className: string;
+  disabled?: boolean;
   action(adapter: TraceSettleAdapter, account: `0x${string}`): Promise<TransactionResult>;
   onCanonicalReload?: () => Promise<void> | void;
 }
@@ -28,6 +29,7 @@ function classifyResult(result: TransactionResult): TransactionStage {
 export function LiveTraceSettleAction({
   children,
   className,
+  disabled = false,
   action,
   onCanonicalReload
 }: LiveTraceSettleActionProps) {
@@ -80,7 +82,7 @@ export function LiveTraceSettleAction({
 
   return (
     <div className="stack">
-      <button className={className} type="button" onClick={runAction}>
+      <button className={className} type="button" onClick={runAction} disabled={disabled}>
         {children}
       </button>
       <TransactionState stage={stage} message={message} />

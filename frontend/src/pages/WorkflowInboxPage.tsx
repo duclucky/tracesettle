@@ -3,13 +3,25 @@ import { createGenLayerTraceSettleAdapter } from "../adapters/genlayerAdapter";
 import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
 import { WorkflowList } from "../components/WorkflowList";
 import { workflows } from "../domain/fixtures";
-import type { WorkflowSummary } from "../domain/types";
+import type { WorkflowStatus, WorkflowSummary } from "../domain/types";
 
-const filters = ["Active", "Needs action", "Retryable", "Settled", "Cancelled"];
+const filters = ["Active", "Needs action", "Retryable", "Settled", "Cancelled"] as const;
+type WorkflowFilter = (typeof filters)[number];
+
+const filterStatuses: Record<WorkflowFilter, WorkflowStatus[]> = {
+  Active: ["DRAFT", "OPEN", "EVIDENCE_LOCKED", "REVIEW_PENDING", "RETRYABLE"],
+  "Needs action": ["DRAFT", "OPEN", "EVIDENCE_LOCKED", "RETRYABLE"],
+  Retryable: ["RETRYABLE"],
+  Settled: ["SETTLED"],
+  Cancelled: ["CANCELLED"]
+};
 
 export function WorkflowInboxPage() {
   const runtime = resolveRuntimeConfig(import.meta.env);
-  const [items, setItems] = useState<WorkflowSummary[]>(workflows);
+  const [items, setItems] = useState<WorkflowSummary[]>(
+    runtime.mode === "live" ? [] : workflows
+  );
+  const [activeFilter, setActiveFilter] = useState<WorkflowFilter>("Active");
   const [readState, setReadState] = useState(
     runtime.mode === "live" ? "Loading canonical contract workflows..." : runtime.reason
   );
@@ -65,12 +77,22 @@ export function WorkflowInboxPage() {
         </aside>
         <div className="filters" aria-label="Workflow filters">
           {filters.map((filter) => (
-            <button className="filter-chip" type="button" key={filter}>
+            <button
+              className={`filter-chip${activeFilter === filter ? " active" : ""}`}
+              type="button"
+              key={filter}
+              aria-pressed={activeFilter === filter}
+              onClick={() => setActiveFilter(filter)}
+            >
               {filter}
             </button>
           ))}
         </div>
-        <WorkflowList workflows={items} />
+        <WorkflowList
+          workflows={items.filter((workflow) =>
+            filterStatuses[activeFilter].includes(workflow.status)
+          )}
+        />
       </div>
     </section>
   );

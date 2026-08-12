@@ -7,13 +7,39 @@ import { TransactionState } from "../components/TransactionState";
 import { workflows } from "../domain/fixtures";
 import type { StepSummary, WorkflowSummary } from "../domain/types";
 
+const defaultArtifactUrl = "https://example.com/tracesettle/trace-1001/build.json";
+const defaultDigest =
+  "sha256:9b4f2d49fd0c3b6e9cf38d28e7f2d0d71cb0f5e6824f519807a8fd9f2d2c36aa";
+
+function isHttpsUrl(value: string): boolean {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isSha256Digest(value: string): boolean {
+  return /^sha256:[0-9a-f]{64}$/i.test(value);
+}
+
 export function EvidenceSubmissionPage() {
   const { workflowId, stepId } = useParams();
   const runtime = resolveRuntimeConfig(import.meta.env);
   const previewWorkflow = workflows.find((item) => item.id === workflowId) ?? workflows[0];
   const previewStep = previewWorkflow.steps.find((item) => item.id === stepId) ?? previewWorkflow.steps[1];
-  const [workflow, setWorkflow] = useState<WorkflowSummary>(previewWorkflow);
-  const [step, setStep] = useState<StepSummary>(previewStep);
+  const [workflow, setWorkflow] = useState<WorkflowSummary | undefined>(
+    runtime.mode === "live" ? undefined : previewWorkflow
+  );
+  const [step, setStep] = useState<StepSummary | undefined>(
+    runtime.mode === "live" ? undefined : previewStep
+  );
+  const [artifactUrl, setArtifactUrl] = useState(
+    runtime.mode === "live" ? "" : previewStep.evidenceUrl ?? defaultArtifactUrl
+  );
+  const [digest, setDigest] = useState(
+    runtime.mode === "live" ? "" : previewStep.digest ?? defaultDigest
+  );
   const [readState, setReadState] = useState(
     runtime.mode === "live" ? "Loading canonical step..." : runtime.reason
   );
@@ -23,6 +49,8 @@ export function EvidenceSubmissionPage() {
     if (runtime.mode !== "live" || !runtime.contractAddress || !workflowId || !stepId) {
       setWorkflow(previewWorkflow);
       setStep(previewStep);
+      setArtifactUrl(previewStep.evidenceUrl ?? defaultArtifactUrl);
+      setDigest(previewStep.digest ?? defaultDigest);
       setReadState(`${runtime.reason}. Showing labeled preview evidence fields.`);
       return () => {
         disposed = true;
@@ -43,6 +71,8 @@ export function EvidenceSubmissionPage() {
         setWorkflow(canonicalWorkflow);
         if (canonicalStep) {
           setStep(canonicalStep);
+          setArtifactUrl(canonicalStep.evidenceUrl ?? defaultArtifactUrl);
+          setDigest(canonicalStep.digest ?? defaultDigest);
           setReadState("Loaded canonical step state from contract views.");
           return;
         }
@@ -68,10 +98,39 @@ export function EvidenceSubmissionPage() {
     workflowId
   ]);
 
+  const evidenceValid = isHttpsUrl(artifactUrl.trim()) && isSha256Digest(digest.trim());
+
+  async function refreshCanonicalStep() {
+    if (runtime.mode !== "live" || !runtime.contractAddress || !workflowId || !stepId) {
+      return;
+    }
+    try {
+      const canonicalWorkflow = await createGenLayerTraceSettleAdapter({
+        address: runtime.contractAddress
+      }).getWorkflow(workflowId);
+      if (!canonicalWorkflow) {
+        setReadState("Workflow was not found in canonical contract state.");
+        return;
+      }
+      const canonicalStep = canonicalWorkflow.steps.find((item) => item.id === stepId);
+      setWorkflow(canonicalWorkflow);
+      if (!canonicalStep) {
+        setReadState("Step was not found in canonical contract state.");
+        return;
+      }
+      setStep(canonicalStep);
+      setArtifactUrl(canonicalStep.evidenceUrl ?? defaultArtifactUrl);
+      setDigest(canonicalStep.digest ?? defaultDigest);
+      setReadState("Reloaded canonical step state after finality.");
+    } catch (error: unknown) {
+      setReadState(error instanceof Error ? error.message : "Canonical step reload failed.");
+    }
+  }
+
   return (
     <section className="page">
       <div className="page-header">
-        <span className="page-kicker">{step.providerLabel}</span>
+        <span className="page-kicker">{step?.providerLabel ?? "Canonical provider step"}</span>
         <h1>Submit evidence</h1>
         <p className="lead">
           Submit the artifact URL and digest for the locked provider step. Success is not
@@ -79,42 +138,55 @@ export function EvidenceSubmissionPage() {
         </p>
       </div>
 
-      <div className="grid two">
-        <form className="form-panel field-grid">
+      {workflow && step ? (
+        <div className="grid two">
+        <form className="form-panel field-grid" onSubmit={(event) => event.preventDefault()}>
           <aside className={runtime.mode === "live" ? "notice" : "notice danger-note"}>
             <strong>{runtime.mode === "live" ? "Contract read" : "Preview read"}</strong>
             <p>{readState}</p>
           </aside>
           <label>
             Artifact URL
-            <input defaultValue={step.evidenceUrl ?? "https://example.com/tracesettle/trace-1001/build.json"} />
+            <input
+              name="artifactUrl"
+              type="url"
+              required
+              value={artifactUrl}
+              onChange={(event) => setArtifactUrl(event.target.value)}
+            />
           </label>
           <label>
             Artifact digest
             <input
               className="mono"
-              defaultValue={
-                step.digest ??
-                "sha256:9b4f2d49fd0c3b6e9cf38d28e7f2d0d71cb0f5e6824f519807a8fd9f2d2c36aa"
-              }
+              name="digest"
+              required
+              pattern="sha256:[0-9a-fA-F]{64}"
+              value={digest}
+              onChange={(event) => setDigest(event.target.value)}
             />
           </label>
-          <label>
-            Bond
-            <select defaultValue="1">
-              <option value="1">1 GEN</option>
-            </select>
-          </label>
+          {!step.accepted && (
+            <LiveTraceSettleAction
+              className="button secondary"
+              onCanonicalReload={refreshCanonicalStep}
+              action={(adapter) =>
+                adapter.acceptStep({ workflowId: workflow.id, stepId: step.id })
+              }
+            >
+              Accept step with 1 GEN
+            </LiveTraceSettleAction>
+          )}
           <LiveTraceSettleAction
             className="button primary"
+            disabled={!step.accepted || !evidenceValid}
+            onCanonicalReload={refreshCanonicalStep}
             action={(adapter) =>
               adapter.submitEvidence({
                 workflowId: workflow.id,
                 stepId: step.id,
-                artifactUrl: step.evidenceUrl ?? "https://example.com/tracesettle/trace-1001/build.json",
-                digest:
-                  step.digest ??
-                  "sha256:9b4f2d49fd0c3b6e9cf38d28e7f2d0d71cb0f5e6824f519807a8fd9f2d2c36aa"
+                artifactUrl: artifactUrl.trim(),
+                digest: digest.trim()
               })
             }
           >
@@ -132,7 +204,13 @@ export function EvidenceSubmissionPage() {
           </section>
           <TransactionState />
         </aside>
-      </div>
+        </div>
+      ) : (
+        <aside className="notice" aria-live="polite">
+          <strong>Contract read</strong>
+          <p>{readState}</p>
+        </aside>
+      )}
     </section>
   );
 }
