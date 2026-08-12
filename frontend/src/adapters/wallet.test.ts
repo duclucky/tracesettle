@@ -4,7 +4,8 @@ import {
   detectInjectedWallet,
   discoverInjectedWallet,
   shortenAddress,
-  type WalletEnvironment
+  type WalletEnvironment,
+  walletRequestErrorMessage
 } from "./wallet";
 
 describe("wallet adapter", () => {
@@ -106,6 +107,12 @@ describe("wallet adapter", () => {
       address: undefined,
       status: "rejected"
     });
+  });
+
+  it("preserves a plain EIP-1193 provider error message", () => {
+    expect(
+      walletRequestErrorMessage({ code: 4001, message: "User rejected the request" })
+    ).toBe("User rejected the request");
   });
 
   it("shortens addresses only for display", () => {

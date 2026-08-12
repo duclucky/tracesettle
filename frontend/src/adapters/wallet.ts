@@ -162,6 +162,24 @@ export async function discoverInjectedWallet(
   });
 }
 
+export function walletRequestErrorMessage(
+  cause: unknown,
+  fallback = "Wallet request failed"
+): string {
+  if (cause instanceof Error && cause.message.trim()) {
+    return cause.message.trim();
+  }
+  const providerMessage = objectProperty(cause, "message");
+  if (typeof providerMessage === "string" && providerMessage.trim()) {
+    return providerMessage.trim();
+  }
+  const providerCode = objectProperty(cause, "code");
+  if (typeof providerCode === "number" || typeof providerCode === "string") {
+    return `${fallback} (code ${providerCode})`;
+  }
+  return fallback;
+}
+
 export async function connectInjectedWallet(provider: Eip1193Provider): Promise<WalletConnection> {
   const accounts = await provider.request({ method: "eth_requestAccounts" });
   if (Array.isArray(accounts) && typeof accounts[0] === "string") {

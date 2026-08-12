@@ -5,7 +5,8 @@ import {
   detectInjectedWallet,
   discoverInjectedWallet,
   shortenAddress,
-  type WalletEnvironment
+  type WalletEnvironment,
+  walletRequestErrorMessage
 } from "../adapters/wallet";
 
 export function WalletStatus() {
@@ -43,7 +44,7 @@ export function WalletStatus() {
         result.status === "connected" ? "Wallet connected" : "Wallet did not return an account"
       );
     } catch (cause) {
-      setStatusMessage(cause instanceof Error ? cause.message : "Wallet request failed");
+      setStatusMessage(walletRequestErrorMessage(cause));
     }
   }
 

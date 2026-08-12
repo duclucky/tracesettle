@@ -22,6 +22,7 @@ describe("TraceSettle route map", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it.each(routeHeadings)("renders %s as %s", (route, heading) => {
@@ -74,6 +75,28 @@ describe("TraceSettle route map", () => {
 
     expect(screen.getAllByText("No browser wallet detected")).toHaveLength(1);
     expect(screen.getByText("No browser wallet detected")).toHaveAttribute(
+      "aria-live",
+      "polite"
+    );
+  });
+
+  it("shows a plain provider rejection in the single wallet status", async () => {
+    vi.stubGlobal("ethereum", {
+      request: vi.fn().mockRejectedValue({
+        code: 4001,
+        message: "OKX Wallet is locked"
+      })
+    });
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Connect wallet" }));
+
+    expect(await screen.findByText("OKX Wallet is locked")).toHaveAttribute(
       "aria-live",
       "polite"
     );
