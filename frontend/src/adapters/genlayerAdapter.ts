@@ -13,7 +13,7 @@ import type {
   WorkflowStatus,
   WorkflowSummary
 } from "../domain/types";
-import type { Eip1193Provider } from "./wallet";
+import { createBrowserWalletProvider, type Eip1193Provider } from "./wallet";
 
 export const GEN = 10n ** 18n;
 
@@ -36,7 +36,7 @@ function createSdkClient(options: AdapterOptions): GenLayerClientLike {
   return createClient({
     chain: chains.studionet,
     account: options.account,
-    provider: options.provider as never
+    provider: options.provider ? (createBrowserWalletProvider(options.provider) as never) : undefined
   }) as unknown as GenLayerClientLike;
 }
 

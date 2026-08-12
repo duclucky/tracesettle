@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   connectInjectedWallet,
+  createBrowserWalletProvider,
   detectInjectedWallet,
   discoverAuthorizedWallet,
   discoverInjectedWallet,
@@ -100,6 +101,36 @@ describe("wallet adapter", () => {
       status: "connected"
     });
     expect(request).toHaveBeenCalledWith({ method: "eth_requestAccounts" });
+  });
+
+  it("normalizes zero gas price before browser wallet transaction prompts", async () => {
+    const requests: Array<{ method: string; params?: unknown[] | Record<string, unknown> }> = [];
+    const provider = {
+      request: vi.fn(async (args: { method: string; params?: unknown[] | Record<string, unknown> }) => {
+        requests.push(args);
+        return "0xabc";
+      })
+    };
+    const compatibleProvider = createBrowserWalletProvider(provider);
+
+    await compatibleProvider.request({
+      method: "eth_sendTransaction",
+      params: [
+        {
+          from: "0x1111111111111111111111111111111111111111",
+          to: "0x2222222222222222222222222222222222222222",
+          gas: "0x30d40",
+          gasPrice: "0x0",
+          value: "0x0"
+        }
+      ]
+    });
+
+    expect(requests[0].params).toEqual([
+      expect.objectContaining({
+        gasPrice: "0x1"
+      })
+    ]);
   });
 
   it("reads an already-authorized account without requesting a connection", async () => {

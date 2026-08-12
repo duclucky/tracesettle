@@ -58,6 +58,37 @@ function available(provider: Eip1193Provider, label: string): WalletDetection {
   return { status: "available", provider, label };
 }
 
+function isTransactionRequest(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+export function createBrowserWalletProvider(provider: Eip1193Provider): Eip1193Provider {
+  return {
+    request(args) {
+      if (
+        args.method !== "eth_sendTransaction" ||
+        !Array.isArray(args.params) ||
+        !isTransactionRequest(args.params[0]) ||
+        args.params[0].gasPrice !== "0x0"
+      ) {
+        return provider.request(args);
+      }
+
+      const [transaction, ...rest] = args.params;
+      return provider.request({
+        ...args,
+        params: [
+          {
+            ...transaction,
+            gasPrice: "0x1"
+          },
+          ...rest
+        ]
+      });
+    }
+  };
+}
+
 export function detectInjectedWallet(source: WalletEnvironment): WalletDetection {
   const directProvider = asProvider(source.ethereum);
   if (directProvider) {
