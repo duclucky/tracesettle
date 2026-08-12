@@ -7,11 +7,13 @@
 - Project slug: tracesettle
 - Category: Projects
 - Status: STUDIONET_VERIFIED
-- Repository: local child repo at `D:\Genlayer Project\tracesettle`; public remote pending
+- Repository: `https://github.com/duclucky/tracesettle`
+- Live app: `https://tracesettle-duckys-projects-bc83c6a0.vercel.app`
 - Target network: studionet
 - Active contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
 - Deployment evidence: `docs/evidence/studionet/deployment.json`
 - Lifecycle evidence: `docs/evidence/studionet/lifecycle.json`
+- Frontend live evidence: `docs/evidence/studionet/frontend-live.json`
 
 ## One-sentence product hook
 
@@ -67,7 +69,7 @@ Settle the failed workflow, not the loudest accusation.
 | Differentiation | PASS | Unlike bilateral escrow, access bonds, slot clearing, or successor transfer, TraceSettle classifies a multi-provider dependency graph after artifacts exist. |
 | Claim-to-code | PASS | Every product claim maps to planned writes, views, tests, and evidence in the implementation plan; Phase 4 locks exact method names before contract code. |
 | Full lifecycle | PASS | Planned lifecycle covers create, fund, accept, submit, lock, review, settle or retry, cancel, and withdraw. |
-| Scope honesty | PASS | V1 now claims local tests, Studionet deployment, and script-signed lifecycle evidence; it does not claim legal liability, offchain execution proof, private evidence, external adoption, browser-wallet write proof, Vercel availability, or Portal acceptance until proven. |
+| Scope honesty | PASS | V1 now claims local tests, Studionet deployment, script-signed lifecycle evidence, public repo, and Vercel availability; it does not claim legal liability, offchain execution proof, private evidence, external adoption, browser-wallet write proof, or Portal acceptance until proven. |
 
 ## Actors, roles and incentives
 
@@ -558,13 +560,24 @@ Lifecycle records are allowlisted public fields only. Full Studio receipts,
 RPC payloads, validator configs, private keys, and raw stdout/stderr are not
 stored in the repository.
 
+Production frontend evidence is recorded in
+`docs/evidence/studionet/frontend-live.json`:
+
+- public repository: `https://github.com/duclucky/tracesettle`
+- live app: `https://tracesettle-duckys-projects-bc83c6a0.vercel.app`
+- deployment id: `dpl_6gAgB29gnL6p8X7QMEbti1shsa7c`
+- Vercel status: `Ready`
+- HTTP status: `200`
+- production JS contains deployed contract address:
+  `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
+
 ## Honest limitations
 
 TraceSettle currently claims approved design, one GenVM contract, direct tests,
 frontend design-system artifacts, local frontend evidence, SDK/wallet/read-path
-integration, Studionet deployment, and script-signed Studionet lifecycle
-evidence. It does not yet claim browser-wallet write evidence, public repo,
-Vercel deployment, Portal submission, Portal acceptance, or external adoption.
+integration, Studionet deployment, script-signed Studionet lifecycle evidence,
+public repo, and Vercel deployment. It does not yet claim browser-wallet write
+evidence, Portal submission, Portal acceptance, or external adoption.
 
 ## Kill criteria
 

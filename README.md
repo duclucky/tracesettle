@@ -11,6 +11,8 @@ coverage, and the deterministic settlement consequence.
 ## Verified status
 
 - Category: Projects
+- Repository: https://github.com/duclucky/tracesettle
+- Live app: https://tracesettle-duckys-projects-bc83c6a0.vercel.app
 - Network: Studionet
 - Contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
 - Deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`
@@ -25,6 +27,7 @@ See:
 - `docs/README.md` for the full specification and gate evidence.
 - `docs/evidence/studionet/deployment.json` for allowlisted deployment proof.
 - `docs/evidence/studionet/lifecycle.json` for allowlisted lifecycle proof.
+- `docs/evidence/studionet/frontend-live.json` for public frontend deployment proof.
 
 ## Build and verify
 
@@ -54,7 +57,8 @@ in ignored project or parent `.env` files for deployment/lifecycle scripts.
 
 ## Honest limits
 
-This repository proves local checks, Studionet deployment, and script-signed
-Studionet lifecycle evidence. It does not claim legal arbitration, private
-evidence support, offchain execution proof, browser-wallet write evidence,
-Portal acceptance, or external adoption.
+This repository proves local checks, Studionet deployment, script-signed
+Studionet lifecycle evidence, public repository availability, and production
+frontend availability. It does not claim legal arbitration, private evidence
+support, offchain execution proof, browser-wallet write evidence, Portal
+acceptance, or external adoption.
