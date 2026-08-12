@@ -1,0 +1,58 @@
+{
+  "network": "studionet",
+  "evidence_kind": "browser_wallet_lifecycle_allowlist",
+  "browser": "user Chrome via chrome:control-chrome",
+  "wallet": "0xC495ef51618D03267A1f227aFe5b27B38c748272",
+  "contract_address": "0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313",
+  "production_url": "https://tracesettle-genlayer.vercel.app",
+  "production_deployment_id": "dpl_2LiFnyrKUTfBYRL5v6kapSCBY5K1",
+  "commit": "bb1b3d0",
+  "workflow_id": "trace-live-20260812-a",
+  "value_policy": "Human-facing values are GEN. Browser demo write values used 1 GEN or 2 GEN only.",
+  "records": [
+    {
+      "label": "submit evidence step-plan",
+      "functionName": "submit_evidence",
+      "tx_hash": "0x16664472814fb16a05ddacede6f28c3fd9bb9cce27f85af5ed3aafa25c201864",
+      "status": "FINALIZED",
+      "evidence_url": "https://gist.githubusercontent.com/duclucky/a50b8d34dfe2e57f3e603910a7f17d72/raw/bbebb23e63c818c5b920d4212a1d1448dcf5ac36/tracesettle-step-plan.txt",
+      "digest": "sha256:8a423d978dcee3b4a6fdb6bc1d75981101b14281058e9b7b227d1fada02756bf"
+    },
+    {
+      "label": "submit evidence step-build",
+      "functionName": "submit_evidence",
+      "tx_hash": "0xfb2342253d86289acc87637ce2f2a523a14c4a084d385bc3690ab7a6e6ef52ed",
+      "status": "FINALIZED",
+      "evidence_url": "https://gist.githubusercontent.com/duclucky/a50b8d34dfe2e57f3e603910a7f17d72/raw/85edad93c9eb26cedfa10da2dc62c68d86923edf/tracesettle-step-build.txt",
+      "digest": "sha256:d63d0e3b1fc6675d36627563f2c7b75c44fbc22e01142747731cf53e79c3070c"
+    },
+    {
+      "label": "lock evidence",
+      "functionName": "lock_evidence",
+      "tx_hash": "0x726844ebae67396e9bd0a5c0c5611bc1974bf1af2b1767455e933e243ee88372",
+      "status": "FINALIZED"
+    },
+    {
+      "label": "withdraw credit",
+      "functionName": "withdraw_credit",
+      "tx_hash": "0xa092aad7e303c3f0c5cb8665f628c33b55429d11a5fad31ade46a44edbb30a5b",
+      "status": "FINALIZED",
+      "credit_after_withdrawal_gen": "0 GEN"
+    }
+  ],
+  "canonical_state_after_review": {
+    "workflow_status": "SETTLED",
+    "settled": true,
+    "pool_gen": "0 GEN",
+    "step_plan_class": "SATISFIED",
+    "step_build_class": "SATISFIED",
+    "step_plan_bond_gen": "0 GEN",
+    "step_build_bond_gen": "0 GEN"
+  },
+  "frontend_checks": {
+    "wallet_restored_after_reload": true,
+    "canonical_credit_read_after_withdrawal": "0 GEN",
+    "post_fix_timeout_handling": "Browser timeout after tx hash is returned is shown as submitted/not-finalized instead of failed; canonical state must be reloaded before relying on it."
+  },
+  "honest_limit": "This file stores allowlisted public fields only. It does not store full Studio receipts, RPC payloads, validator configuration, private keys, raw stdout/stderr, wallet balances, gas, or fees. Some browser actions were proven by canonical state reload when the wallet UI or SDK did not expose a finalized receipt in time."
+}

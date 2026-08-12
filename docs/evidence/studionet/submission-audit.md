@@ -15,8 +15,8 @@ Captured: 2026-08-12
    - `npm run check`: PASS.
    - `genvm-lint check`: PASS, `TraceSettleContract`, 16 methods.
    - Direct tests: 11 passed.
-   - Deployment parser tests: 2 passed.
-   - Frontend tests: 26 passed.
+   - Deployment parser tests: 3 passed.
+   - Frontend tests: 54 passed.
    - Frontend production build: PASS.
 
 3. Network evidence:
@@ -24,14 +24,15 @@ Captured: 2026-08-12
    - Contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`.
    - Deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`.
    - Deployment status/result: `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`.
-   - Lifecycle: `trace-live-20260812-c`, `SETTLED`, verdict `SUCCESS`, consequence `PAY_ALL`.
-   - Provider credit: `4 GEN` before withdrawal, `0 GEN` after withdrawal.
+   - Script-signed lifecycle: `trace-live-20260812-c`, `SETTLED`, verdict `SUCCESS`, consequence `PAY_ALL`.
+   - Script-signed provider credit: `4 GEN` before withdrawal, `0 GEN` after withdrawal.
+   - Chrome browser-wallet lifecycle: `trace-live-20260812-a`, `SETTLED`, credit after withdrawal `0 GEN`.
 
 4. README/docs/frontend claims:
    - Public repo URL verified and pushed: https://github.com/duclucky/tracesettle-genlayer.
    - Vercel production URL verified HTTP 200: https://tracesettle-genlayer.vercel.app.
    - Production JS contains the deployed contract address.
-   - Browser-wallet lifecycle proof remains explicitly pending and is not claimed.
+   - Chrome browser-wallet lifecycle evidence is recorded in `docs/evidence/studionet/browser-wallet-lifecycle.json`.
 
 ## Objective gate command
 
@@ -69,6 +70,6 @@ NO BLOCKER - Project tracesettle - Category projects
 ## Warnings and pending proof
 
 - Static precheck warning: class name is `TraceSettleContract`; workspace policy prefers a project-specific class and `genvm-lint` recognizes it, so this is not treated as a blocker.
-- Browser control in this Codex session failed with `failed to write kernel assets`; no browser-wallet lifecycle proof is claimed.
 - No CI workflow is claimed.
+- No demo video is claimed.
 - No Portal submission confirmation is claimed.

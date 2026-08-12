@@ -6,9 +6,9 @@ Recommended category: Projects
 
 Title: TraceSettle
 
-Notes / Description (827 chars):
+Notes / Description (869 chars):
 
-TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider AI workflows. A sponsor funds 2 GEN, providers post 1 GEN bonds and submit public artifact evidence. The Intelligent Contract fetches the locked evidence, recomputes digests, asks validators to classify step satisfaction/root cause/coverage, and deterministically opens GEN credits/refunds/withdrawals. Verified: one TraceSettleContract, 11 direct tests, 2 deployment parser tests, 26 frontend tests, npm run check passing, contract deployment SUCCESS on Studionet, script-signed lifecycle settled SUCCESS and withdrew provider credit to 0 GEN, public GitHub repo, and Vercel production app. Limitations: browser-wallet lifecycle proof, demo video, CI, Portal acceptance, external adoption, private evidence, and legal arbitration are not claimed.
+TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider AI workflows. A sponsor funds 2 GEN, providers post 1 GEN bonds and submit public artifact evidence. The Intelligent Contract fetches locked evidence, recomputes digests, asks validators to classify step satisfaction/root cause/coverage, and deterministically opens GEN credits/refunds/withdrawals. Verified: one TraceSettleContract, 11 direct tests, 3 deployment parser tests, 54 frontend tests, npm run check passing, contract deployment SUCCESS on Studionet, script-signed lifecycle settled SUCCESS and withdrew provider credit to 0 GEN, Chrome browser-wallet lifecycle settled SUCCESS and withdrew credit to 0 GEN, public GitHub repo, and Vercel production app. Limitations: demo video, CI, Portal acceptance, external adoption, private evidence, and legal arbitration are not claimed.
 
 ## Evidence
 
@@ -19,6 +19,7 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 - Deployment evidence: `docs/evidence/studionet/deployment.json`
 - Live app: https://tracesettle-genlayer.vercel.app
 - Live frontend evidence: `docs/evidence/studionet/frontend-live.json`
+- Browser-wallet lifecycle evidence: `docs/evidence/studionet/browser-wallet-lifecycle.json`
 - Successful CI: N/A; no GitHub Actions workflow is claimed. Local `npm run check` passes.
 
 ## Verified facts
@@ -26,8 +27,8 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 - Contracts: 1 (`TraceSettleContract`)
 - Contract methods: 16 (6 view, 10 write)
 - Direct tests: 11 passed
-- Deployment parser tests: 2 passed
-- Frontend tests: 26 passed
+- Deployment parser tests: 3 passed
+- Frontend tests: 54 passed
 - Network: Studionet
 - Deployed contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
 - Deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`
@@ -38,10 +39,12 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 - Consequence class: `PAY_ALL`
 - Provider credit before withdrawal: `4 GEN`
 - Provider credit after withdrawal: `0 GEN`
+- Browser-wallet workflow: `trace-live-20260812-a`
+- Browser-wallet final workflow status: `SETTLED`
+- Browser-wallet credit after withdrawal: `0 GEN`
 
 ## Honest limitations / pending
 
-- Browser-wallet lifecycle proof is pending. The frontend has wallet/write wrappers, finality handling, tests, and deployed-address config, but the verified Studionet lifecycle was script-signed.
 - Demo video is pending.
 - Portal submission and Portal acceptance are not claimed.
 - External adoption is not claimed.

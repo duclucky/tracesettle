@@ -73,7 +73,7 @@ authorized parent workspace `.env`, and never print private key values.
 ## Honest limits
 
 This repository proves local checks, Studionet deployment, script-signed
-Studionet lifecycle evidence, public repository availability, and production
-frontend availability. It does not claim legal arbitration, private evidence
-support, offchain execution proof, browser-wallet write evidence, Portal
-acceptance, or external adoption.
+Studionet lifecycle evidence, Chrome browser-wallet lifecycle evidence, public
+repository availability, and production frontend availability. It does not
+claim legal arbitration, private evidence support, offchain execution proof,
+Portal acceptance, CI, demo video, or external adoption.

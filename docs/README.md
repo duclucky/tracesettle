@@ -70,7 +70,7 @@ Settle the failed workflow, not the loudest accusation.
 | Differentiation | PASS | Unlike bilateral escrow, access bonds, slot clearing, or successor transfer, TraceSettle classifies a multi-provider dependency graph after artifacts exist. |
 | Claim-to-code | PASS | Every product claim maps to planned writes, views, tests, and evidence in the implementation plan; Phase 4 locks exact method names before contract code. |
 | Full lifecycle | PASS | Planned lifecycle covers create, fund, accept, submit, lock, review, settle or retry, cancel, and withdraw. |
-| Scope honesty | PASS | V1 now claims local tests, Studionet deployment, script-signed lifecycle evidence, public repo, and Vercel availability; it does not claim legal liability, offchain execution proof, private evidence, external adoption, browser-wallet write proof, or Portal acceptance until proven. |
+| Scope honesty | PASS | V1 now claims local tests, Studionet deployment, script-signed lifecycle evidence, Chrome browser-wallet lifecycle evidence, public repo, and Vercel availability; it does not claim legal liability, offchain execution proof, private evidence, external adoption, Portal acceptance, CI, or demo video. |
 
 ## Actors, roles and incentives
 
@@ -566,7 +566,7 @@ Production frontend evidence is recorded in
 
 - public repository: `https://github.com/duclucky/tracesettle-genlayer`
 - live app: `https://tracesettle-genlayer.vercel.app`
-- deployment id: `dpl_HjtSA98J4i22znofmwfHidBt3F2V`
+- deployment id: `dpl_2LiFnyrKUTfBYRL5v6kapSCBY5K1`
 - Vercel status: `Ready`
 - HTTP status: `200`
 - production JS contains deployed contract address:
@@ -577,8 +577,9 @@ Production frontend evidence is recorded in
 TraceSettle currently claims approved design, one GenVM contract, direct tests,
 frontend design-system artifacts, local frontend evidence, SDK/wallet/read-path
 integration, Studionet deployment, script-signed Studionet lifecycle evidence,
-public repo, and Vercel deployment. It does not yet claim browser-wallet write
-evidence, Portal submission, Portal acceptance, or external adoption.
+Chrome browser-wallet lifecycle evidence, public repo, and Vercel deployment. It
+does not yet claim Portal submission, Portal acceptance, CI, demo video, or
+external adoption.
 
 ## Kill criteria
 

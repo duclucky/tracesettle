@@ -9,11 +9,11 @@
 - `npm run check` passes contract lint, direct tests, deployment parser tests, frontend tests, and production build.
 - Studionet deployment finalized with `SUCCESS` at `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`.
 - Script-signed Studionet lifecycle settled workflow `trace-live-20260812-c` with verdict `SUCCESS`, consequence `PAY_ALL`, and provider credit withdrawn to `0 GEN`.
-- Vercel production deployment is live and configured with the deployed contract address.
+- Chrome browser-wallet lifecycle settled workflow `trace-live-20260812-a`, used real user-approved wallet transactions, and withdrew browser-read credit to `0 GEN`.
+- Vercel production deployment `dpl_2LiFnyrKUTfBYRL5v6kapSCBY5K1` is live and configured with the deployed contract address.
 
 ## Pending / not claimed
 
-- Browser-wallet lifecycle evidence is pending. The frontend has wrappers, controls, tests, finality handling, and canonical reload paths, but the verified lifecycle was script-signed.
 - Demo video is pending.
 - Portal submission and Portal acceptance are not claimed.
 - External adoption is not claimed.
