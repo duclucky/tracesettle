@@ -6,7 +6,7 @@
 - Project name: TraceSettle
 - Project slug: tracesettle
 - Category: Projects
-- Status: SELECTED
+- Status: BUILDING
 - Repository: local child repo at `D:\Genlayer Project\tracesettle`
 - Target network: studionet
 
@@ -190,14 +190,334 @@ Settle the failed workflow, not the loudest accusation.
 - Recovery: missing source, malformed source, digest mismatch, unavailable
   source, or invalid objective evidence produces non-penalizing retryable state.
 
-## Phase 4 completion gate
+## State model
 
-The following sections are intentionally not contract-final in Phase 3A:
-structured storage, exact public method signatures, write-method safety matrix,
-value-destination matrix, fact-authentication matrix, consensus-critical field
-matrix, threat model, direct test matrix, deployment evidence plan, and
-claim-to-code matrix. Phase 4 must replace this section with the full locked
-specification before any contract code is written.
+### Stable IDs
+
+- Workflow ID: sponsor-supplied ASCII slug, unique per workflow.
+- Step ID: sponsor-supplied ASCII slug, unique inside a workflow.
+- Attempt ID: contract-derived `workflow_id + ":" + review_nonce`.
+- Credit key: `address + ":" + workflow_id`.
+- Evidence key: `workflow_id + ":" + step_id`.
+
+### Structured storage
+
+- `workflows: TreeMap[str, WorkflowRecord]`
+- `steps: TreeMap[str, StepRecord]`
+- `evidence: TreeMap[str, EvidenceRecord]`
+- `attempts: TreeMap[str, AttemptRecord]`
+- `credits: TreeMap[str, bigint]`
+- `workflow_ids: DynArray[str]`
+
+`WorkflowRecord` stores sponsor, status, objective, pool, locked pool, review
+nonce, step count, total fee weight, settled flag, cancelled flag, and
+settlement reason. `StepRecord` stores provider, promise, dependency IDs,
+fee weight, bond, accepted flag, submitted flag, class, and direct downstream
+IDs. `EvidenceRecord` stores URL, digest, dependency snapshot, submitter,
+attempt nonce, and submission timestamp. `AttemptRecord` stores verdict,
+coverage, root-cause set, consequence class, reason, and finalized flag.
+
+### State machine
+
+```text
+DRAFT --add_step/sponsor--> DRAFT
+DRAFT --activate_workflow/sponsor--> OPEN
+OPEN --accept_step/provider + 1 GEN--> OPEN
+OPEN --submit_evidence/provider--> OPEN
+OPEN --lock_evidence/sponsor--> EVIDENCE_LOCKED
+EVIDENCE_LOCKED --request_review/sponsor--> SETTLED
+EVIDENCE_LOCKED --request_review/sponsor with unverifiable--> RETRYABLE
+RETRYABLE --retry_review/sponsor--> SETTLED
+RETRYABLE --retry_review/sponsor with unverifiable--> RETRYABLE
+DRAFT --cancel_workflow/sponsor--> CANCELLED
+OPEN --cancel_workflow/sponsor--> CANCELLED
+RETRYABLE --cancel_workflow/sponsor--> CANCELLED
+SETTLED --withdraw_credit/credited actor--> SETTLED
+CANCELLED --withdraw_credit/credited actor--> CANCELLED
+```
+
+### Illegal transitions
+
+- Add step after activation.
+- Activate with no steps, zero fee weight, unknown dependency, cycle, or
+  duplicate provider-step ID pair.
+- Accept a step by the wrong provider or with value other than 1 GEN.
+- Submit evidence by an unaccepted provider, after evidence lock, with unknown
+  dependency, malformed URL, or malformed digest.
+- Lock evidence before every step has accepted and submitted evidence.
+- Request review outside `EVIDENCE_LOCKED` or `RETRYABLE`.
+- Retry outside `RETRYABLE`.
+- Cancel after `EVIDENCE_LOCKED`, `REVIEW_PENDING`, `SETTLED`, or `CANCELLED`.
+- Withdraw when credit is zero.
+
+### Authorization
+
+- Sponsor-only writes: create workflow, add step, activate, lock evidence,
+  request review, retry review, cancel workflow.
+- Assigned provider-only writes: accept step, submit evidence for that step.
+- Credited actor-only write: withdraw credit for caller.
+- Public reads: workflow, step, attempt, credit, and workflow list.
+
+### Idempotency and double-action prevention
+
+- Duplicate workflow and step IDs reject.
+- Duplicate activation rejects after status changes.
+- Duplicate acceptance rejects if the step is already accepted.
+- Evidence replacement is allowed only before evidence lock and only by the
+  assigned provider.
+- Settlement opens credits once through a `settled` flag.
+- Cancellation opens refund credits once through a `cancelled` flag.
+- Withdrawal debits credit before external transfer.
+
+## Write-method safety matrix
+
+| Method | Caller | Allowed states | Forbidden states | Idempotency | Value/accounting effect | Views affected | Negative tests |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `create_workflow(workflow_id, objective)` | Sponsor | New workflow | Existing workflow ID | Duplicate ID rejects | Requires exactly 2 GEN; locks sponsor pool | `get_workflow`, `list_workflows`, sponsor credit remains unchanged | duplicate ID, wrong value, empty objective |
+| `add_step(workflow_id, step_id, provider, promise, dependencies, fee_weight)` | Sponsor | DRAFT | OPEN, EVIDENCE_LOCKED, REVIEW_PENDING, RETRYABLE, SETTLED, CANCELLED | Duplicate step rejects | No value movement; updates fee weights and DAG | `get_step`, `get_workflow` | wrong caller, duplicate step, unknown dependency, self dependency, cycle, zero fee weight |
+| `activate_workflow(workflow_id)` | Sponsor | DRAFT with valid DAG | OPEN, EVIDENCE_LOCKED, REVIEW_PENDING, RETRYABLE, SETTLED, CANCELLED | Duplicate activation rejects | Locks configuration; no value movement | `get_workflow` | wrong caller, no steps, cycle, zero total fee weight |
+| `accept_step(workflow_id, step_id)` | Assigned provider | OPEN | DRAFT, EVIDENCE_LOCKED, REVIEW_PENDING, RETRYABLE, SETTLED, CANCELLED | Duplicate acceptance rejects | Requires exactly 1 GEN bond; locks provider bond | `get_step`, `get_workflow` | wrong caller, wrong value, duplicate accept, unknown step |
+| `submit_evidence(workflow_id, step_id, url, digest)` | Assigned accepted provider | OPEN before lock | DRAFT, EVIDENCE_LOCKED, REVIEW_PENDING, RETRYABLE, SETTLED, CANCELLED | Replaces prior evidence by same provider before lock | No value movement; stores URL/digest/dependency snapshot | `get_step`, `get_attempt` | wrong caller, unaccepted step, malformed URL, malformed digest, unknown dependency |
+| `lock_evidence(workflow_id)` | Sponsor | OPEN with all required evidence | DRAFT, EVIDENCE_LOCKED, REVIEW_PENDING, RETRYABLE, SETTLED, CANCELLED | Duplicate lock rejects | Freezes evidence for current attempt | `get_workflow`, `get_attempt` | wrong caller, missing evidence, duplicate lock |
+| `request_review(workflow_id)` | Sponsor | EVIDENCE_LOCKED | DRAFT, OPEN, REVIEW_PENDING, SETTLED, CANCELLED | Settlement flag prevents duplicate credit | On `SUCCESS` or `MATERIAL_FAILURE`, opens fee, bond, refund, and compensation credits once; on `UNVERIFIABLE`, opens no credit | `get_workflow`, `get_attempt`, `get_credit` | wrong caller, digest mismatch, unavailable source, malicious leader, duplicate settlement |
+| `retry_review(workflow_id)` | Sponsor | RETRYABLE | DRAFT, OPEN, EVIDENCE_LOCKED, REVIEW_PENDING, SETTLED, CANCELLED | New nonce per retry; settlement flag prevents duplicate credit | Opens no value until a settlement verdict exists | `get_workflow`, `get_attempt` | wrong caller, non-retryable state, repeated source failure |
+| `cancel_workflow(workflow_id)` | Sponsor | DRAFT, OPEN, RETRYABLE | EVIDENCE_LOCKED, REVIEW_PENDING, SETTLED, CANCELLED | Cancelled flag prevents duplicate credit | Credits unsettled pool to sponsor and each locked bond to original provider | `get_workflow`, `get_credit` | wrong caller, duplicate cancel, after evidence lock, accounting sum mismatch |
+| `withdraw_credit()` | Caller with credit | SETTLED or CANCELLED workflow credit exists | Zero credit | Debit before transfer prevents duplicate withdrawal | Emits transfer of caller credit and sets credit to zero | `get_credit` | zero credit, duplicate withdraw, transfer amount mismatch |
+
+## Value-destination matrix
+
+| Value source | Locked state | Release/refund/forfeit destination | Terminal states | Duplicate/late/retry behavior | Proof view |
+| --- | --- | --- | --- | --- | --- |
+| Sponsor pool, 2 GEN | `create_workflow` | Fees to satisfied and downstream-blocked providers; unearned remainder to sponsor | SETTLED, CANCELLED | Settlement or cancellation flag prevents duplicate credit | `get_workflow`, `get_credit(sponsor)` |
+| Provider bond, 1 GEN per accepted step | `accept_step` | Returned to satisfied/downstream-blocked provider; distributed from material-fault provider to directly downstream-blocked providers, else sponsor | SETTLED, CANCELLED | Bond cannot be accepted twice; retry opens no value movement | `get_step`, `get_credit(provider)` |
+| Earned fee | Settlement | Provider credit by fee weight | SETTLED | Settlement flag prevents duplicate fee credit | `get_credit(provider)` |
+| Fault bond distribution | Settlement | Directly downstream-blocked providers equally, or sponsor if none | SETTLED | Root-cause set bounded and credited once | `get_attempt`, `get_credit(address)` |
+| Refund | Settlement or cancellation | Sponsor for unearned pool; original provider for cancelled locked bond | SETTLED, CANCELLED | Retryable state opens no refund until cancel or settlement | `get_credit(address)` |
+| Withdrawal credit | Settlement or cancellation | Caller external transfer | SETTLED, CANCELLED | Credit debited before transfer; duplicate withdrawal rejects | `get_credit(caller)` |
+
+## Frontend lifecycle coverage matrix
+
+| Canonical state | User action | Contract write | UI component | Frontend test | Evidence status |
+| --- | --- | --- | --- | --- | --- |
+| No workflow | Create workflow with 2 GEN | `create_workflow` | `/workflows/new` | `App.test.tsx` route coverage, Phase 7 adapter test | Local UI built; browser write waits for Phase 7 to Phase 9 |
+| DRAFT | Add step | `add_step` | `/workflows/new` | Phase 7 adapter visibility test | Local UI built; contract write planned |
+| DRAFT | Activate workflow | `activate_workflow` | `/workflows/new` | Phase 7 adapter visibility test | Local UI built; contract write planned |
+| OPEN | Accept assigned step with 1 GEN | `accept_step` | `/workflows/:id/evidence/:stepId` | `contractAdapter.test.ts` action visibility | Local UI built; browser write waits for Phase 7 |
+| OPEN | Submit evidence | `submit_evidence` | `/workflows/:id/evidence/:stepId` | `contractAdapter.test.ts` action visibility | Local UI built; browser write waits for Phase 7 |
+| OPEN | Lock evidence | `lock_evidence` | `/workflows/:id` | `App.test.tsx` route coverage | Local UI built; contract write planned |
+| EVIDENCE_LOCKED | Request review | `request_review` | `/workflows/:id` | `contractAdapter.test.ts` action visibility | Local UI built; contract write planned |
+| RETRYABLE | Retry review | `retry_review` | `/workflows/:id` | Phase 7 adapter visibility test | Local UI built; contract write planned |
+| DRAFT/OPEN/RETRYABLE | Cancel safely | `cancel_workflow` | `/workflows/:id` | Phase 7 adapter visibility test | Local UI built; contract write planned |
+| SETTLED/CANCELLED with credit | Withdraw credit | `withdraw_credit` | `/credits` | Phase 7 adapter visibility test | Local UI built; browser write waits for Phase 7 |
+
+## Evidence policy
+
+- Authoritative sources: provider-submitted HTTPS artifact URLs from an allowed
+  host/path policy locked in the workflow.
+- Provenance/authentication: the provider wallet transaction binds workflow ID,
+  step ID, URL, digest, dependency IDs, and attempt nonce. This authenticates
+  the provider's own offered deliverable only.
+- Authorized attestor/signer: assigned provider address for each step.
+- Anti-replay event/digest identity: `workflow_id`, `step_id`, `review_nonce`,
+  URL, digest, dependency snapshot, and submitter.
+- Signed timestamp bounds: contract stores submission timestamp from
+  transaction context and rejects evidence after lock.
+- Immutable policy/source version URLs and hashes: V1 locks allowed host/path
+  policy in workflow configuration; external real-world policy versions are out
+  of scope.
+- Allowed schemes/domains/paths: HTTPS only, host/path prefix locked by sponsor
+  before activation.
+- Time/window rules: evidence can be submitted or replaced only while workflow
+  is `OPEN`; review uses the locked evidence snapshot.
+- Size/count bounds: maximum 6 steps, maximum 3 dependencies per step, maximum
+  4 root causes, maximum 6 fetched artifacts, maximum 32 KB raw artifact body.
+- Missing evidence: lock rejects before every step has evidence.
+- Contradictory evidence: semantic review may classify `UNVERIFIABLE` when
+  artifacts cannot support a bounded class.
+- Unavailable source: `UNVERIFIABLE`, state becomes `RETRYABLE`, no value moves.
+- Invalid/unverifiable attestation: non-penalizing `UNVERIFIABLE`/`RETRYABLE`.
+- Prompt-injection boundary: fetched artifact text cannot add policies, step
+  IDs, classes, destinations, or transfer rules; only locked workflow data can.
+- Private/unverifiable evidence excluded: private sources, screenshots, and
+  self-reported logs without the locked URL/digest path are not accepted.
+
+### Fact authentication matrix
+
+| Consequential fact | Who can fabricate it? | Authoritative source / issuer | Verification method | Replay/timestamp binding | Failure consequence | Required negative test |
+| --- | --- | --- | --- | --- | --- | --- |
+| Provider identity for step | Outsider or wrong provider | Locked step provider address | `gl.message.sender` equals provider | workflow ID and step ID in storage | Reject write | wrong provider accept and submit |
+| Artifact content bytes | Provider or host operator | Exact fetched HTTPS response | Recompute digest from fetched raw content | URL, digest, review nonce | `UNVERIFIABLE`, no settlement | digest mismatch |
+| Dependency snapshot | Provider | Locked step DAG and evidence records | Dependency IDs must match locked dependencies and submitted evidence | workflow ID, step ID, review nonce | Reject evidence or classify retryable | unknown dependency |
+| Evidence timing | Provider | Contract state and transaction context | Evidence allowed only while `OPEN` before lock | status and submission timestamp | Reject write | submit after lock |
+| Settlement destination | Any participant | Deterministic contract rules | Derived from locked classes and root-cause set | settlement flag and workflow ID | Reject or no duplicate credit | duplicate settlement and accounting invariant |
+
+## Consensus design
+
+### Leader task
+
+- Inputs: workflow objective, locked step promises, dependencies, provider
+  addresses, evidence URLs, digests, fetched artifact bodies, and review nonce.
+- Fetch: `gl.nondet.web.get(url)` for each locked evidence URL.
+- Extraction: recompute digest before prompt; pass only bounded text summaries
+  and locked step records to the LLM.
+- Normalization: drop unknown keys, sort step IDs, cap rationale length, and
+  map invalid enums to `UNVERIFIABLE`.
+- Structured output: JSON with workflow ID, attempt ID, coverage, workflow
+  verdict, step classes, root-cause set, consequence class, and reason.
+
+### Consensus-critical fields
+
+| Field | Type/bounds | Comparison rule | Why critical |
+| --- | --- | --- | --- |
+| `workflow_id` | existing string ID | exact match | Prevents cross-workflow settlement |
+| `attempt_id` | derived string ID | exact match | Prevents replay across attempts |
+| `coverage` | `COMPLETE` or `INCOMPLETE` | exact match | Incomplete coverage cannot settle |
+| `workflow_verdict` | `SUCCESS`, `MATERIAL_FAILURE`, `UNVERIFIABLE` | exact match | Drives settlement or retry |
+| `step_classes` | one class per locked step | exact key and enum match | Determines fees, bonds, and blocked providers |
+| `root_cause_steps` | sorted set, max 4, existing step IDs | exact set match | Determines fault bond distribution |
+| `consequence_class` | `PAY_ALL`, `NET_FAULT`, `NO_CONSEQUENCE` | exact match | Prevents LLM from inventing value movement |
+
+### Validator
+
+- Independent evidence/replay: validators fetch the same locked URLs, recompute
+  digests, and rerun semantic classification.
+- Semantic rule: compare only coverage, verdict, step class map, root-cause set,
+  and consequence class; reason wording is non-critical.
+- Rejection conditions: unknown step, missing step, duplicate step, invalid enum,
+  expanded root set, digest mismatch, unavailable source, expanded policy, or
+  mismatched consequence class.
+- `UNDETERMINED` handling: no settlement credit opens; current attempt remains
+  readable and sponsor can retry only from canonical `RETRYABLE`.
+
+### Rationale policy
+
+Reason text is capped, user-facing, and non-consensus-critical. It may explain
+why a step was satisfied, faulted, blocked, or unverifiable, but it cannot
+change value destinations or legal actions.
+
+## Consequence and accounting
+
+| Verdict | Canonical state change | Consumer action | Value movement |
+| --- | --- | --- | --- |
+| SUCCESS | SETTLED | Withdraw credit | Each provider earns fee and returned bond; sponsor receives rounding remainder |
+| MATERIAL_FAILURE | SETTLED | Withdraw credit | Satisfied and downstream-blocked providers earn fee and bond; material-fault providers lose fee and bond; unearned fees return to sponsor |
+| UNVERIFIABLE | RETRYABLE | Retry or cancel | No value movement |
+| CANCELLED | CANCELLED | Withdraw credit | Sponsor pool returns to sponsor; accepted provider bonds return to original providers |
+
+- Accepted/finalized boundary: value consequences are opened only when the
+  review transaction finalizes with a settlement verdict or cancellation
+  finalizes in a safe state.
+- Ledger invariant: sponsor pool plus accepted bonds equals locked values,
+  opened credits, withdrawn values, and remaining locked values.
+- Child-message/transfer evidence: withdrawal emits a transfer only after debit.
+- Withdrawal/settlement: credits are canonical and idempotent.
+- Cure/appeal/restore: not in V1; retry handles unverifiable evidence only.
+
+## Reusable interface
+
+### Write methods
+
+- `create_workflow(workflow_id: str, objective: str) payable`
+- `add_step(workflow_id: str, step_id: str, provider: Address, promise: str, dependencies: DynArray[str], fee_weight: u256)`
+- `activate_workflow(workflow_id: str)`
+- `accept_step(workflow_id: str, step_id: str) payable`
+- `submit_evidence(workflow_id: str, step_id: str, url: str, digest: str)`
+- `lock_evidence(workflow_id: str)`
+- `request_review(workflow_id: str)`
+- `retry_review(workflow_id: str)`
+- `cancel_workflow(workflow_id: str)`
+- `withdraw_credit()`
+
+### View methods
+
+- `get_workflow(workflow_id: str) -> dict`
+- `get_step(workflow_id: str, step_id: str) -> dict`
+- `get_attempt(workflow_id: str) -> dict`
+- `get_credit(owner: Address) -> dict`
+- `list_workflows(offset: u256, limit: u256) -> DynArray[str]`
+
+### Consumer/callback
+
+- Authentication: no external consumer callback in V1.
+- Idempotency key: not applicable in V1.
+- Failure/retry: external consumers read finalized views after settlement.
+- Authorized cancellation: sponsor-only safe-state cancellation.
+
+## Threat model
+
+| Threat | Attack | Mitigation | Test |
+| --- | --- | --- | --- |
+| Wrong caller | Outsider accepts, submits, reviews, cancels, or withdraws | Role checks on every write | unauthorized caller tests |
+| DAG manipulation | Sponsor creates cycle or unknown dependency | Validate dependencies before activation | cycle and unknown dependency tests |
+| Digest mismatch | Provider changes hosted artifact after submission | Recompute exact fetched raw content digest before semantic review | digest mismatch retryable test |
+| Source outage | URL unavailable during review | `UNVERIFIABLE` and no value movement | unavailable source test |
+| Prompt injection | Artifact asks model to change policy or destination | Locked policy and bounded output schema; unknown keys dropped | prompt-injection test |
+| Malicious leader | Leader omits step or changes root-cause set | Validator compares consensus-critical meaning | malicious leader test |
+| Duplicate settlement | Sponsor repeats review after settled | `settled` flag and accounting invariant | duplicate settlement test |
+| Double withdrawal | Actor withdraws twice | Debit before transfer and zero-credit reject | duplicate withdrawal test |
+| Value orphan | Cancellation or retry leaves pool/bond without owner | Value-destination matrix and cancellation credits | cancellation accounting test |
+
+## Test plan
+
+- Happy path: three-step workflow settles `SUCCESS`, pays fees, returns bonds,
+  and withdraws credit.
+- Unauthorized: outsider and wrong-role writes reject.
+- Isolation: two workflows with same step IDs do not collide.
+- Evidence failure: missing, malformed, unavailable, digest-mismatched, and
+  contradictory evidence cannot settle.
+- Malicious leader: missing step, unknown step, changed root cause, invalid enum,
+  and mismatched consequence class fail validation.
+- Prompt injection: artifact text cannot expand policy, root causes, or value
+  destinations.
+- Semantic mismatch: valid JSON with different step class map fails validator.
+- Verdict classes: `SUCCESS`, `MATERIAL_FAILURE`, and `UNVERIFIABLE`.
+- Duplicate: create, accept, activate, lock, settle, cancel, and withdraw.
+- Recovery/value write safety: retry and cancel from legal and illegal states.
+- Accounting/value: pool, bonds, earned fee, refund, compensation, credit, and
+  withdrawal invariant.
+- Cure/restore: no V1 cure or restore claim.
+- Consumer enforcement: no V1 consumer callback.
+- Undetermined/retry: undetermined review cannot open credits.
+
+## Claim-to-code matrix
+
+| Product claim | Contract method/state | View/read | Direct test | Network evidence |
+| --- | --- | --- | --- | --- |
+| Sponsor funds a bounded workflow with 2 GEN | `create_workflow`, DRAFT | `get_workflow` | wrong value, duplicate ID, stored pool | Studionet create tx and read |
+| Providers post 1 GEN bonds | `accept_step`, OPEN | `get_step` | wrong caller, wrong value, duplicate accept | Studionet accept tx and read |
+| Evidence is bound to provider and digest | `submit_evidence` | `get_step`, `get_attempt` | wrong provider, digest mismatch, unknown dependency | Studionet submit tx and read |
+| Validators classify step satisfaction and root cause | `request_review`, `retry_review` | `get_attempt` | malicious leader, semantic mismatch, prompt injection | Studionet review tx and attempt read |
+| Unverifiable evidence is non-penalizing | `request_review`, RETRYABLE | `get_workflow`, `get_credit` | source outage, digest mismatch, zero credit movement | Studionet retryable lifecycle |
+| Settlement opens deterministic credits | settlement branch in review | `get_credit` | success, material failure, accounting invariant | Studionet settled lifecycle |
+| Withdrawal debits before transfer | `withdraw_credit` | `get_credit` | zero credit, duplicate withdraw | Studionet withdraw tx and post-read |
+| Frontend is a full product, not method list | route map and adapter | route render tests | `App.test.tsx`, `contractAdapter.test.ts` | Vercel and browser evidence after deployment |
+
+## Analogue and differentiation matrix
+
+| Analogue/prior idea | Similar dimensions | Structural difference | Collision decision |
+| --- | --- | --- | --- |
+| TrustlessAgent | Deliverable escrow with release/refund | TraceSettle nets a multi-provider dependency graph and classifies every step | Distinct |
+| SkillSlot Clearing | Agent marketplace and allocation | TraceSettle judges after artifacts exist, not before slot allocation | Distinct |
+| PactRelay | Successor handoff judgment | TraceSettle keeps all providers and attributes root fault across a DAG | Distinct |
+| AgentAccessBond | Bond and semantic policy violation | TraceSettle settles workflow fees/bonds, not identity access/quarantine | Distinct |
+| Generic arbitration | Evidence-based dispute resolution | TraceSettle uses locked step classes, root-cause set, and deterministic value mapping | Distinct |
+
+## Deployment and evidence plan
+
+- Network: Studionet.
+- Actors/wallet separation: sponsor wallet from ignored authorized `.env`;
+  second actor wallet only if required and authorized for lifecycle separation.
+- Deploy steps: inspect current deployment state, deploy only if no active
+  finalized deployment exists for current source commit and Depends/API family.
+- Consequential lifecycle: create, add steps, activate, accept, submit evidence,
+  lock, request review, read settlement or retry, cancel if retryable, withdraw.
+- Canonical reads: workflow, step, attempt, and credit after every finalized
+  write.
+- Balance/receipt proof: save allowlisted tx hash, explorer URL, status,
+  result, timestamp, public actor, pre/post credit, and GEN-denominated value.
+- Evidence path: `docs/evidence/studionet/`.
+- Resume/idempotency: scripts inspect deployment and lifecycle files before any
+  write; finalized transactions are not replayed.
 
 ## Frontend baseline
 
