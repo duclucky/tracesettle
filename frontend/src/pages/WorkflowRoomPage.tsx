@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { StatusBadge } from "../components/StatusBadge";
 import { TransactionState } from "../components/TransactionState";
 import { workflows } from "../domain/fixtures";
@@ -48,15 +49,24 @@ export function WorkflowRoomPage() {
             <h2>Next legal action</h2>
             <p>{workflow.nextAction}</p>
             <div className="actions">
-              <button className="button primary" type="button">
+              <LiveTraceSettleAction
+                className="button primary"
+                action={(adapter) => adapter.lockEvidence(workflow.id)}
+              >
                 Lock evidence
-              </button>
-              <button className="button secondary" type="button">
+              </LiveTraceSettleAction>
+              <LiveTraceSettleAction
+                className="button secondary"
+                action={(adapter) => adapter.requestReview(workflow.id)}
+              >
                 Request review
-              </button>
-              <button className="button danger" type="button">
+              </LiveTraceSettleAction>
+              <LiveTraceSettleAction
+                className="button danger"
+                action={(adapter) => adapter.cancelWorkflow(workflow.id)}
+              >
                 Cancel safely
-              </button>
+              </LiveTraceSettleAction>
             </div>
           </section>
           <TransactionState stage={workflow.status === "RETRYABLE" ? "retryable" : "idle"} />

@@ -1,6 +1,6 @@
 import { CheckCircle, Clock, WarningCircle } from "@phosphor-icons/react";
 
-type TransactionStage = "idle" | "submitted" | "finalized" | "failed" | "retryable";
+export type TransactionStage = "idle" | "submitted" | "finalized" | "failed" | "retryable";
 
 const stageCopy: Record<TransactionStage, { icon: typeof Clock; title: string; body: string }> = {
   idle: {
@@ -30,7 +30,13 @@ const stageCopy: Record<TransactionStage, { icon: typeof Clock; title: string; b
   }
 };
 
-export function TransactionState({ stage = "idle" }: { stage?: TransactionStage }) {
+export function TransactionState({
+  stage = "idle",
+  message
+}: {
+  stage?: TransactionStage;
+  message?: string;
+}) {
   const copy = stageCopy[stage];
   const Icon = copy.icon;
 
@@ -39,7 +45,7 @@ export function TransactionState({ stage = "idle" }: { stage?: TransactionStage 
       <strong>
         <Icon size={18} weight="bold" aria-hidden="true" /> {copy.title}
       </strong>
-      <p>{copy.body}</p>
+      <p>{message ?? copy.body}</p>
     </aside>
   );
 }

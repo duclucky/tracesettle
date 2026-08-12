@@ -1,3 +1,4 @@
+import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { TransactionState } from "../components/TransactionState";
 
 export function NewWorkflowPage() {
@@ -28,9 +29,19 @@ export function NewWorkflowPage() {
               <option value="2">2 GEN</option>
             </select>
           </label>
-          <button className="button primary" type="button">
-            Prepare workflow transaction
-          </button>
+          <LiveTraceSettleAction
+            className="button primary"
+            action={(adapter) =>
+              adapter.createWorkflow({
+                objective:
+                  "Produce a verified travel-planning workflow with itinerary, reservation handoff, and cancellation notes.",
+                providerAddresses: ["0x2222222222222222222222222222222222222222"],
+                poolGen: 2
+              })
+            }
+          >
+            Submit workflow transaction
+          </LiveTraceSettleAction>
         </form>
         <section className="panel stack">
           <h2>Setup checks</h2>

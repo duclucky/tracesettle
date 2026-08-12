@@ -148,6 +148,14 @@ summary:focus-visible {
   font-size: 0.9rem;
 }
 
+.link-button {
+  border: 0;
+  background: transparent;
+  color: var(--color-accent-strong);
+  font-weight: 800;
+  padding: 0;
+}
+
 .status-dot {
   width: 9px;
   height: 9px;

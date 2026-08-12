@@ -1,3 +1,4 @@
+import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { TransactionState } from "../components/TransactionState";
 import { credits } from "../domain/fixtures";
 
@@ -26,9 +27,12 @@ export function CreditsPage() {
               </article>
             ))}
           </div>
-          <button className="button primary" type="button">
-            Prepare withdrawal
-          </button>
+          <LiveTraceSettleAction
+            className="button primary"
+            action={(adapter, account) => adapter.withdrawCredit(account)}
+          >
+            Submit withdrawal
+          </LiveTraceSettleAction>
         </section>
         <TransactionState />
       </div>

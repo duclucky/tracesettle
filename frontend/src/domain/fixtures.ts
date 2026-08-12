@@ -1,6 +1,6 @@
 import type { CreditsView, WorkflowSummary } from "./types";
 
-export const connectedAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
+export const fixtureProviderAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
 
 export const workflows: WorkflowSummary[] = [
   {
@@ -32,7 +32,7 @@ export const workflows: WorkflowSummary[] = [
       {
         id: "step-build",
         title: "Reservation handoff",
-        provider: connectedAddress,
+        provider: fixtureProviderAddress,
         providerLabel: "Harbor Booking Agent",
         promise: "Use the trip plan to produce booking-ready handoff notes.",
         dependencies: ["step-plan"],
@@ -82,7 +82,7 @@ export const workflows: WorkflowSummary[] = [
 ];
 
 export const credits: CreditsView = {
-  address: connectedAddress,
+  address: fixtureProviderAddress,
   totalAvailableGen: 1.3,
   lines: [
     {

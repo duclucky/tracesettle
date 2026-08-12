@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { TransactionState } from "../components/TransactionState";
 import { workflows } from "../domain/fixtures";
 
@@ -40,9 +41,21 @@ export function EvidenceSubmissionPage() {
               <option value="1">1 GEN</option>
             </select>
           </label>
-          <button className="button primary" type="button">
-            Prepare evidence transaction
-          </button>
+          <LiveTraceSettleAction
+            className="button primary"
+            action={(adapter) =>
+              adapter.submitEvidence({
+                workflowId: workflow.id,
+                stepId: step.id,
+                artifactUrl: step.evidenceUrl ?? "https://example.com/tracesettle/trace-1001/build.json",
+                digest:
+                  step.digest ??
+                  "sha256:9b4f2d49fd0c3b6e9cf38d28e7f2d0d71cb0f5e6824f519807a8fd9f2d2c36aa"
+              })
+            }
+          >
+            Submit evidence transaction
+          </LiveTraceSettleAction>
         </form>
 
         <aside className="stack">

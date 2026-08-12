@@ -1,7 +1,7 @@
-import { connectedAddress } from "../domain/fixtures";
+import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
 
 export function SettingsPage() {
-  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
+  const runtime = resolveRuntimeConfig(import.meta.env);
 
   return (
     <section className="page">
@@ -16,13 +16,16 @@ export function SettingsPage() {
 
       <div className="grid two">
         <section className="panel stack">
-          <h2>Connected wallet</h2>
-          <p className="mono">{connectedAddress}</p>
-          <p className="muted">Provider preference may be remembered locally; canonical state is not.</p>
+          <h2>Wallet connection</h2>
+          <p className="mono">Browser wallet required</p>
+          <p className="muted">
+            The app requests an injected wallet at action time. It does not ship a fixture
+            account or private key.
+          </p>
         </section>
-        <section className={`panel stack ${contractAddress ? "" : "danger-note"}`}>
+        <section className={`panel stack ${runtime.contractAddress ? "" : "danger-note"}`}>
           <h2>Contract address</h2>
-          <p className="mono">{contractAddress || "Missing VITE_CONTRACT_ADDRESS"}</p>
+          <p className="mono">{runtime.contractAddress || runtime.reason}</p>
           <p className="muted">
             Missing configuration is shown honestly until a Studionet deployment is verified.
           </p>
