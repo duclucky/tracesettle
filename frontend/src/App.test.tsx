@@ -254,6 +254,27 @@ describe("TraceSettle route map", () => {
     expect(screen.queryByRole("textbox", { name: "Artifact URL" })).not.toBeInTheDocument();
   });
 
+  it("surfaces a wallet rejection during canonical credit reads", async () => {
+    vi.stubEnv("VITE_CONTRACT_ADDRESS", "0x1234567890123456789012345678901234567890");
+    vi.stubGlobal("ethereum", {
+      request: vi.fn().mockRejectedValue({
+        code: 4001,
+        message: "Credit read wallet request denied"
+      })
+    });
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/credits"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Read canonical credits" }));
+
+    expect(await screen.findByText("Credit read wallet request denied")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "0 GEN available" })).toBeInTheDocument();
+  });
+
   it("blocks live actions honestly until a contract address is configured", async () => {
     const user = userEvent.setup();
     render(

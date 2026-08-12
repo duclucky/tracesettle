@@ -4,7 +4,8 @@ import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
 import {
   connectInjectedWallet,
   discoverInjectedWallet,
-  type WalletEnvironment
+  type WalletEnvironment,
+  walletRequestErrorMessage
 } from "../adapters/wallet";
 import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { TransactionState } from "../components/TransactionState";
@@ -33,25 +34,29 @@ export function CreditsPage() {
       setReadState(`${runtime.reason}. Configure a deployed contract before reading credits.`);
       return;
     }
-    const detection = await discoverInjectedWallet(
-      typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment)
-    );
-    if (!detection.provider) {
-      setReadState("No browser wallet detected. Canonical credit read needs an account.");
-      return;
+    try {
+      const detection = await discoverInjectedWallet(
+        typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment)
+      );
+      if (!detection.provider) {
+        setReadState("No browser wallet detected. Canonical credit read needs an account.");
+        return;
+      }
+      const wallet = await connectInjectedWallet(detection.provider);
+      if (!wallet.address) {
+        setReadState("Wallet did not return an account. No canonical credit read was made.");
+        return;
+      }
+      const adapter = createGenLayerTraceSettleAdapter({
+        address: runtime.contractAddress,
+        account: wallet.address,
+        provider: detection.provider
+      });
+      setView(await adapter.getCredits(wallet.address));
+      setReadState("Loaded canonical credit from contract view for the connected wallet.");
+    } catch (cause) {
+      setReadState(walletRequestErrorMessage(cause, "Canonical credit read failed"));
     }
-    const wallet = await connectInjectedWallet(detection.provider);
-    if (!wallet.address) {
-      setReadState("Wallet did not return an account. No canonical credit read was made.");
-      return;
-    }
-    const adapter = createGenLayerTraceSettleAdapter({
-      address: runtime.contractAddress,
-      account: wallet.address,
-      provider: detection.provider
-    });
-    setView(await adapter.getCredits(wallet.address));
-    setReadState("Loaded canonical credit from contract view for the connected wallet.");
   }
 
   return (
