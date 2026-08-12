@@ -99,6 +99,24 @@ describe("wallet-backed form payloads", () => {
     );
   });
 
+  it("does not claim submission while wallet approval is still pending", async () => {
+    mocks.adapter.createWorkflow.mockImplementationOnce(
+      () => new Promise(() => undefined)
+    );
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/workflows/new"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Submit workflow transaction" }));
+
+    expect(await screen.findByText("Awaiting wallet")).toBeInTheDocument();
+    expect(screen.queryByText("Submitted")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit workflow transaction" })).toBeDisabled();
+  });
+
   it("submits the URL and digest typed by the accepted provider", async () => {
     const user = userEvent.setup();
     render(

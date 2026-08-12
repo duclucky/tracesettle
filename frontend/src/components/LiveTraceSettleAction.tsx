@@ -36,6 +36,7 @@ export function LiveTraceSettleAction({
 }: LiveTraceSettleActionProps) {
   const [stage, setStage] = useState<TransactionStage>("idle");
   const [message, setMessage] = useState<string>("No transaction has been signed from this control.");
+  const busy = stage === "wallet" || stage === "submitted";
 
   async function runAction() {
     const runtime = resolveRuntimeConfig(import.meta.env);
@@ -61,8 +62,8 @@ export function LiveTraceSettleAction({
         setMessage("Wallet did not return an account. No transaction was submitted.");
         return;
       }
-      setStage("submitted");
-      setMessage("Wallet transaction submitted; waiting for GenLayer finality.");
+      setStage("wallet");
+      setMessage("Approve or reject the request in your wallet. No transaction is claimed yet.");
       const { createGenLayerTraceSettleAdapter } = await import("../adapters/genlayerAdapter");
       const adapter = createGenLayerTraceSettleAdapter({
         address: runtime.contractAddress,
@@ -83,7 +84,12 @@ export function LiveTraceSettleAction({
 
   return (
     <div className="stack">
-      <button className={className} type="button" onClick={runAction} disabled={disabled}>
+      <button
+        className={className}
+        type="button"
+        onClick={runAction}
+        disabled={disabled || busy}
+      >
         {children}
       </button>
       <TransactionState stage={stage} message={message} />

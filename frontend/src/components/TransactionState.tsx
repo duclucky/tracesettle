@@ -1,12 +1,23 @@
 import { CheckCircle, Clock, WarningCircle } from "@phosphor-icons/react";
 
-export type TransactionStage = "idle" | "submitted" | "finalized" | "failed" | "retryable";
+export type TransactionStage =
+  | "idle"
+  | "wallet"
+  | "submitted"
+  | "finalized"
+  | "failed"
+  | "retryable";
 
 const stageCopy: Record<TransactionStage, { icon: typeof Clock; title: string; body: string }> = {
   idle: {
     icon: Clock,
     title: "Ready for wallet",
     body: "No transaction has been signed or submitted from this screen."
+  },
+  wallet: {
+    icon: Clock,
+    title: "Awaiting wallet",
+    body: "Approve or reject the request in your wallet. No transaction is claimed yet."
   },
   submitted: {
     icon: Clock,
