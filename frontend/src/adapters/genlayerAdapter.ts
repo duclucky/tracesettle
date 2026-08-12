@@ -109,14 +109,36 @@ function statusName(receipt: Record<string, unknown>): string {
   return String(receipt.statusName ?? receipt.status ?? "").toUpperCase();
 }
 
+function isFinalityTimeout(cause: unknown): boolean {
+  const message = cause instanceof Error ? cause.message : String(cause ?? "");
+  return (
+    message.includes("Timed out waiting for transaction") &&
+    message.includes('to reach status "FINALIZED"')
+  );
+}
+
 async function waitForFinality(
   client: GenLayerClientLike,
   hash: `0x${string}` | string
 ): Promise<TransactionResult> {
-  const receipt = await client.waitForTransactionReceipt({
-    hash,
-    status: "FINALIZED"
-  });
+  let receipt: Record<string, unknown>;
+  try {
+    receipt = await client.waitForTransactionReceipt({
+      hash,
+      status: "FINALIZED"
+    });
+  } catch (cause) {
+    if (isFinalityTimeout(cause)) {
+      return {
+        id: hash,
+        submitted: true,
+        finalized: false,
+        message:
+          "Transaction submitted; finality was not confirmed before the browser timeout. Reload canonical contract state before relying on it."
+      };
+    }
+    throw cause;
+  }
   const finalized = statusName(receipt) === "FINALIZED";
   return {
     id: hash,

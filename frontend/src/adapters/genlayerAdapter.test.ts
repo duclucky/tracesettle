@@ -210,6 +210,29 @@ describe("GenLayer TraceSettle adapter", () => {
     });
   });
 
+  it("does not mark a submitted transaction failed when finality polling times out", async () => {
+    const client = createClientStub();
+    client.writeContract.mockResolvedValue("0xtimeout");
+    client.waitForTransactionReceipt.mockRejectedValue(
+      new Error(
+        'Timed out waiting for transaction 0xtimeout to reach status "FINALIZED" (current status: 5).'
+      )
+    );
+    const adapter = createGenLayerTraceSettleAdapter({
+      address: "0x1234567890123456789012345678901234567890",
+      account: "0x2222222222222222222222222222222222222222",
+      client
+    });
+
+    await expect(adapter.withdrawCredit("0x2222222222222222222222222222222222222222")).resolves.toEqual({
+      id: "0xtimeout",
+      submitted: true,
+      finalized: false,
+      message:
+        "Transaction submitted; finality was not confirmed before the browser timeout. Reload canonical contract state before relying on it."
+    });
+  });
+
   it("uses 1 GEN for provider bond acceptance", async () => {
     const client = createClientStub();
     client.writeContract.mockResolvedValue("0x123");
