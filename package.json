@@ -1,0 +1,10 @@
+{
+  "name": "tracesettle",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "npm run check:frontend",
+    "check:frontend": "cd frontend && npm test && npm run build"
+  }
+}
