@@ -3,7 +3,8 @@ import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
 import {
   connectInjectedWallet,
   discoverInjectedWallet,
-  type WalletEnvironment
+  type WalletEnvironment,
+  walletRequestErrorMessage
 } from "../adapters/wallet";
 import type { TraceSettleAdapter, TransactionResult } from "../domain/types";
 import { TransactionState, type TransactionStage } from "./TransactionState";
@@ -76,7 +77,7 @@ export function LiveTraceSettleAction({
       }
     } catch (cause) {
       setStage("failed");
-      setMessage(cause instanceof Error ? cause.message : "Transaction failed before finality.");
+      setMessage(walletRequestErrorMessage(cause, "Transaction failed before finality"));
     }
   }
 

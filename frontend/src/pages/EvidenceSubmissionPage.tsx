@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { createGenLayerTraceSettleAdapter } from "../adapters/genlayerAdapter";
 import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
+import { discoverAuthorizedWallet, type WalletEnvironment } from "../adapters/wallet";
 import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { TransactionState } from "../components/TransactionState";
 import { workflows } from "../domain/fixtures";
@@ -43,10 +44,12 @@ export function EvidenceSubmissionPage() {
   const [readState, setReadState] = useState(
     runtime.mode === "live" ? "Loading canonical step..." : runtime.reason
   );
+  const [currentAccount, setCurrentAccount] = useState<`0x${string}` | undefined>();
 
   useEffect(() => {
     let disposed = false;
-    if (runtime.mode !== "live" || !runtime.contractAddress || !workflowId || !stepId) {
+    const contractAddress = runtime.contractAddress;
+    if (runtime.mode !== "live" || !contractAddress || !workflowId || !stepId) {
       setWorkflow(previewWorkflow);
       setStep(previewStep);
       setArtifactUrl(previewStep.evidenceUrl ?? defaultArtifactUrl);
@@ -57,12 +60,22 @@ export function EvidenceSubmissionPage() {
       };
     }
 
-    createGenLayerTraceSettleAdapter({ address: runtime.contractAddress })
-      .getWorkflow(workflowId)
-      .then((canonicalWorkflow) => {
+    const environment =
+      typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment);
+    discoverAuthorizedWallet(environment)
+      .then(async (wallet) => ({
+        wallet,
+        canonicalWorkflow: await createGenLayerTraceSettleAdapter({
+          address: contractAddress,
+          account: wallet.address,
+          provider: wallet.provider
+        }).getWorkflow(workflowId)
+      }))
+      .then(({ wallet, canonicalWorkflow }) => {
         if (disposed) {
           return;
         }
+        setCurrentAccount(wallet.address);
         if (!canonicalWorkflow) {
           setReadState("Workflow was not found in canonical contract state.");
           return;
@@ -99,14 +112,26 @@ export function EvidenceSubmissionPage() {
   ]);
 
   const evidenceValid = isHttpsUrl(artifactUrl.trim()) && isSha256Digest(digest.trim());
+  const canActOnStep =
+    runtime.mode === "preview"
+      ? true
+      : Boolean(
+          currentAccount && step?.provider.toLowerCase() === currentAccount.toLowerCase()
+        );
 
   async function refreshCanonicalStep() {
     if (runtime.mode !== "live" || !runtime.contractAddress || !workflowId || !stepId) {
       return;
     }
     try {
+      const environment =
+        typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment);
+      const wallet = await discoverAuthorizedWallet(environment);
+      setCurrentAccount(wallet.address);
       const canonicalWorkflow = await createGenLayerTraceSettleAdapter({
-        address: runtime.contractAddress
+        address: runtime.contractAddress,
+        account: wallet.address,
+        provider: wallet.provider
       }).getWorkflow(workflowId);
       if (!canonicalWorkflow) {
         setReadState("Workflow was not found in canonical contract state.");
@@ -151,6 +176,7 @@ export function EvidenceSubmissionPage() {
               name="artifactUrl"
               type="url"
               required
+              disabled={!canActOnStep}
               value={artifactUrl}
               onChange={(event) => setArtifactUrl(event.target.value)}
             />
@@ -161,12 +187,18 @@ export function EvidenceSubmissionPage() {
               className="mono"
               name="digest"
               required
+              disabled={!canActOnStep}
               pattern="sha256:[0-9a-fA-F]{64}"
               value={digest}
               onChange={(event) => setDigest(event.target.value)}
             />
           </label>
-          {!step.accepted && (
+          {!canActOnStep && (
+            <p className="muted">
+              This step is read-only because the connected account is not its provider.
+            </p>
+          )}
+          {canActOnStep && !step.accepted && (
             <LiveTraceSettleAction
               className="button secondary"
               onCanonicalReload={refreshCanonicalStep}
@@ -177,21 +209,23 @@ export function EvidenceSubmissionPage() {
               Accept step with 1 GEN
             </LiveTraceSettleAction>
           )}
-          <LiveTraceSettleAction
-            className="button primary"
-            disabled={!step.accepted || !evidenceValid}
-            onCanonicalReload={refreshCanonicalStep}
-            action={(adapter) =>
-              adapter.submitEvidence({
-                workflowId: workflow.id,
-                stepId: step.id,
-                artifactUrl: artifactUrl.trim(),
-                digest: digest.trim()
-              })
-            }
-          >
-            Submit evidence transaction
-          </LiveTraceSettleAction>
+          {canActOnStep && (
+            <LiveTraceSettleAction
+              className="button primary"
+              disabled={!step.accepted || !evidenceValid}
+              onCanonicalReload={refreshCanonicalStep}
+              action={(adapter) =>
+                adapter.submitEvidence({
+                  workflowId: workflow.id,
+                  stepId: step.id,
+                  artifactUrl: artifactUrl.trim(),
+                  digest: digest.trim()
+                })
+              }
+            >
+              Submit evidence transaction
+            </LiveTraceSettleAction>
+          )}
         </form>
 
         <aside className="stack">

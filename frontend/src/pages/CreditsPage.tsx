@@ -89,6 +89,8 @@ export function CreditsPage() {
           </div>
           <LiveTraceSettleAction
             className="button primary"
+            disabled={view.totalAvailableGen <= 0}
+            onCanonicalReload={loadCredits}
             action={(adapter, account) => adapter.withdrawCredit(account)}
           >
             Submit withdrawal

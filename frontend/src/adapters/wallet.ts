@@ -194,6 +194,40 @@ export async function connectInjectedWallet(provider: Eip1193Provider): Promise<
   };
 }
 
+export async function readAuthorizedWallet(provider: Eip1193Provider): Promise<WalletConnection> {
+  const accounts = await provider.request({ method: "eth_accounts" });
+  if (Array.isArray(accounts) && typeof accounts[0] === "string") {
+    return {
+      status: "connected",
+      address: accounts[0] as `0x${string}`
+    };
+  }
+  return {
+    status: "rejected",
+    address: undefined
+  };
+}
+
+export async function discoverAuthorizedWallet(source: WalletEnvironment): Promise<{
+  provider?: Eip1193Provider;
+  address?: `0x${string}`;
+}> {
+  const detection = await discoverInjectedWallet(source);
+  if (!detection.provider) {
+    return {};
+  }
+  let connection: WalletConnection;
+  try {
+    connection = await readAuthorizedWallet(detection.provider);
+  } catch {
+    connection = { status: "rejected", address: undefined };
+  }
+  return {
+    provider: detection.provider,
+    address: connection.address
+  };
+}
+
 export function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }

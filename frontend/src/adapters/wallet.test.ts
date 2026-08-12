@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
   connectInjectedWallet,
   detectInjectedWallet,
+  discoverAuthorizedWallet,
   discoverInjectedWallet,
+  readAuthorizedWallet,
   shortenAddress,
   type WalletEnvironment,
   walletRequestErrorMessage
@@ -98,6 +100,25 @@ describe("wallet adapter", () => {
       status: "connected"
     });
     expect(request).toHaveBeenCalledWith({ method: "eth_requestAccounts" });
+  });
+
+  it("reads an already-authorized account without requesting a connection", async () => {
+    const request = vi.fn().mockResolvedValue(["0x1234567890123456789012345678901234567890"]);
+
+    await expect(readAuthorizedWallet({ request })).resolves.toEqual({
+      address: "0x1234567890123456789012345678901234567890",
+      status: "connected"
+    });
+    expect(request).toHaveBeenCalledWith({ method: "eth_accounts" });
+  });
+
+  it("keeps public canonical reads available when account discovery is rejected", async () => {
+    const provider = { request: vi.fn().mockRejectedValue({ code: 4100 }) };
+
+    await expect(discoverAuthorizedWallet({ ethereum: provider })).resolves.toEqual({
+      provider,
+      address: undefined
+    });
   });
 
   it("does not accept an empty wallet response as a connected state", async () => {

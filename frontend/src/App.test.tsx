@@ -273,6 +273,27 @@ describe("TraceSettle route map", () => {
 
     expect(await screen.findByText("Credit read wallet request denied")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "0 GEN available" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit withdrawal" })).toBeDisabled();
+  });
+
+  it("surfaces a plain wallet rejection from a write control", async () => {
+    vi.stubEnv("VITE_CONTRACT_ADDRESS", "0x1234567890123456789012345678901234567890");
+    vi.stubGlobal("ethereum", {
+      request: vi.fn().mockRejectedValue({
+        code: 4001,
+        message: "Create workflow wallet request denied"
+      })
+    });
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/workflows/new"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Submit workflow transaction" }));
+
+    expect(await screen.findByText("Create workflow wallet request denied")).toBeInTheDocument();
   });
 
   it("blocks live actions honestly until a contract address is configured", async () => {

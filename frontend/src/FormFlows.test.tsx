@@ -43,6 +43,8 @@ const mocks = vi.hoisted(() => {
     getWorkflow: vi.fn().mockResolvedValue(canonicalWorkflow),
     getCredits: vi.fn().mockResolvedValue({ address: "", totalAvailableGen: 0, lines: [] }),
     createWorkflow: vi.fn().mockResolvedValue(finalized),
+    addStep: vi.fn().mockResolvedValue(finalized),
+    activateWorkflow: vi.fn().mockResolvedValue(finalized),
     acceptStep: vi.fn().mockResolvedValue(finalized),
     submitEvidence: vi.fn().mockResolvedValue(finalized),
     lockEvidence: vi.fn().mockResolvedValue(finalized),
@@ -53,6 +55,7 @@ const mocks = vi.hoisted(() => {
   };
   return {
     adapter,
+    canonicalWorkflow,
     createAdapter: vi.fn(() => adapter)
   };
 });
@@ -91,7 +94,6 @@ describe("wallet-backed form payloads", () => {
     await waitFor(() =>
       expect(mocks.adapter.createWorkflow).toHaveBeenCalledWith({
         objective: "Settle the edited workflow objective",
-        providerAddresses: ["0x2222222222222222222222222222222222222222"],
         poolGen: 2
       })
     );
@@ -123,6 +125,88 @@ describe("wallet-backed form payloads", () => {
         artifactUrl: "https://evidence.example/edited-plan.json",
         digest: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
       })
+    );
+  });
+
+  it("adds the sponsor's typed provider step to a canonical draft", async () => {
+    mocks.adapter.getWorkflow.mockResolvedValueOnce({
+      ...mocks.canonicalWorkflow,
+      role: "sponsor",
+      status: "DRAFT",
+      steps: []
+    });
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/workflows/trace-1001"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    const stepId = await screen.findByRole("textbox", { name: "Step ID" });
+    expect(screen.getByRole("button", { name: "Activate workflow" })).toBeDisabled();
+    await user.type(stepId, "step-build");
+    await user.type(
+      screen.getByRole("textbox", { name: "Provider address" }),
+      "0x3333333333333333333333333333333333333333"
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: "Step promise" }),
+      "Build the public artifact"
+    );
+    await user.type(screen.getByRole("textbox", { name: "Dependencies" }), "step-plan");
+    const feeWeight = screen.getByRole("spinbutton", { name: "Fee weight" });
+    await user.clear(feeWeight);
+    await user.type(feeWeight, "2");
+    await user.click(screen.getByRole("button", { name: "Add provider step" }));
+
+    await waitFor(() =>
+      expect(mocks.adapter.addStep).toHaveBeenCalledWith({
+        workflowId: "trace-1001",
+        stepId: "step-build",
+        provider: "0x3333333333333333333333333333333333333333",
+        promise: "Build the public artifact",
+        dependencies: ["step-plan"],
+        feeWeight: 2
+      })
+    );
+  });
+
+  it("activates a configured canonical draft", async () => {
+    mocks.adapter.getWorkflow.mockResolvedValueOnce({
+      ...mocks.canonicalWorkflow,
+      role: "sponsor",
+      status: "DRAFT"
+    });
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/workflows/trace-1001"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    const activate = await screen.findByRole("button", { name: "Activate workflow" });
+    expect(activate).toBeEnabled();
+    await user.click(activate);
+
+    await waitFor(() =>
+      expect(mocks.adapter.activateWorkflow).toHaveBeenCalledWith("trace-1001")
+    );
+  });
+
+  it("binds canonical workflow reads to the already-authorized wallet account", async () => {
+    render(
+      <MemoryRouter initialEntries={["/workflows/trace-1001"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    await waitFor(() =>
+      expect(mocks.createAdapter).toHaveBeenCalledWith(
+        expect.objectContaining({
+          account: "0x2222222222222222222222222222222222222222",
+          provider: (globalThis as typeof globalThis & { ethereum?: unknown }).ethereum
+        })
+      )
     );
   });
 });

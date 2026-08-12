@@ -1,5 +1,6 @@
 import { credits, workflows } from "../domain/fixtures";
 import type {
+  AddStepInput,
   CreateWorkflowInput,
   StepActionInput,
   SubmitEvidenceInput,
@@ -29,6 +30,12 @@ export function createFixtureAdapter(): TraceSettleAdapter {
     },
     async createWorkflow(input: CreateWorkflowInput) {
       return result(`Workflow draft ready for ${input.poolGen} GEN funding.`);
+    },
+    async addStep(input: AddStepInput) {
+      return result(`Step ${input.stepId} requires a real wallet transaction.`);
+    },
+    async activateWorkflow(id: string) {
+      return result(`Workflow ${id} activation requires a real wallet transaction.`);
     },
     async acceptStep(input: StepActionInput) {
       return result(`Step ${input.stepId} requires a real wallet transaction.`);

@@ -100,6 +100,8 @@ export function unavailableAdapter(message: string): TraceSettleAdapter {
     getWorkflow: reject,
     getCredits: reject,
     createWorkflow: reject,
+    addStep: reject,
+    activateWorkflow: reject,
     acceptStep: reject,
     submitEvidence: reject,
     lockEvidence: reject,

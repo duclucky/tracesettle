@@ -1,6 +1,7 @@
 import { chains, createClient } from "genlayer-js";
 import { CalldataAddress } from "genlayer-js/types";
 import type {
+  AddStepInput,
   CreateWorkflowInput,
   CreditsView,
   StepClass,
@@ -197,6 +198,15 @@ export function createGenLayerTraceSettleAdapter(options: AdapterOptions): Trace
       }
       const stepIds = await readStepIds(id);
       workflow.steps = await Promise.all(stepIds.map((stepId) => readStep(id, stepId)));
+      const account = options.account?.toLowerCase();
+      if (account && workflow.sponsor.toLowerCase() === account) {
+        workflow.role = "sponsor";
+      } else if (
+        account &&
+        workflow.steps.some((step) => step.provider.toLowerCase() === account)
+      ) {
+        workflow.role = "provider";
+      }
       return workflow;
     },
     async getCredits(address: string): Promise<CreditsView> {
@@ -225,9 +235,30 @@ export function createGenLayerTraceSettleAdapter(options: AdapterOptions): Trace
             : []
       };
     },
-    createWorkflow(input: CreateWorkflowInput) {
+    async createWorkflow(input: CreateWorkflowInput) {
       const workflowId = `trace-${Date.now().toString(36)}`;
-      return write("create_workflow", [workflowId, input.objective], BigInt(input.poolGen) * GEN);
+      const result = await write(
+        "create_workflow",
+        [workflowId, input.objective],
+        BigInt(input.poolGen) * GEN
+      );
+      return {
+        ...result,
+        message: `${result.message} Canonical workflow ID: ${workflowId}.`
+      };
+    },
+    addStep(input: AddStepInput) {
+      return write("add_step", [
+        input.workflowId,
+        input.stepId,
+        calldataAddress(input.provider),
+        input.promise,
+        input.dependencies.join(","),
+        input.feeWeight
+      ]);
+    },
+    activateWorkflow(id: string) {
+      return write("activate_workflow", [id]);
     },
     acceptStep(input: StepActionInput) {
       return write("accept_step", [input.workflowId, input.stepId], GEN);

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { createGenLayerTraceSettleAdapter } from "../adapters/genlayerAdapter";
 import { isActionVisible } from "../adapters/contractAdapter";
 import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
+import { discoverAuthorizedWallet, type WalletEnvironment } from "../adapters/wallet";
 import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { StatusBadge } from "../components/StatusBadge";
 import { TransactionState } from "../components/TransactionState";
@@ -19,10 +20,37 @@ export function WorkflowRoomPage() {
   const [readState, setReadState] = useState(
     runtime.mode === "live" ? "Loading canonical workflow..." : runtime.reason
   );
+  const [newStepId, setNewStepId] = useState("");
+  const [newProvider, setNewProvider] = useState("");
+  const [newPromise, setNewPromise] = useState("");
+  const [newDependencies, setNewDependencies] = useState("");
+  const [newFeeWeight, setNewFeeWeight] = useState("1");
+
+  async function refreshCanonicalWorkflow() {
+    if (runtime.mode !== "live" || !runtime.contractAddress || !workflowId) {
+      return;
+    }
+    const environment =
+      typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment);
+    const wallet = await discoverAuthorizedWallet(environment);
+    const canonicalWorkflow = await createGenLayerTraceSettleAdapter({
+      address: runtime.contractAddress,
+      account: wallet.address,
+      provider: wallet.provider
+    }).getWorkflow(workflowId);
+    if (!canonicalWorkflow) {
+      setWorkflow(undefined);
+      setReadState("Workflow was not found in canonical contract state.");
+      return;
+    }
+    setWorkflow(canonicalWorkflow);
+    setReadState("Reloaded canonical workflow state after finality.");
+  }
 
   useEffect(() => {
     let disposed = false;
-    if (runtime.mode !== "live" || !runtime.contractAddress || !workflowId) {
+    const contractAddress = runtime.contractAddress;
+    if (runtime.mode !== "live" || !contractAddress || !workflowId) {
       setWorkflow(previewWorkflow);
       setReadState(`${runtime.reason}. Showing labeled preview workflow.`);
       return () => {
@@ -30,8 +58,16 @@ export function WorkflowRoomPage() {
       };
     }
 
-    createGenLayerTraceSettleAdapter({ address: runtime.contractAddress })
-      .getWorkflow(workflowId)
+    const environment =
+      typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment);
+    discoverAuthorizedWallet(environment)
+      .then((wallet) =>
+        createGenLayerTraceSettleAdapter({
+          address: contractAddress,
+          account: wallet.address,
+          provider: wallet.provider
+        }).getWorkflow(workflowId)
+      )
       .then((canonicalWorkflow) => {
         if (disposed) {
           return;
@@ -54,6 +90,14 @@ export function WorkflowRoomPage() {
       disposed = true;
     };
   }, [previewWorkflow, runtime.contractAddress, runtime.mode, runtime.reason, workflowId]);
+
+  const feeWeight = Number(newFeeWeight);
+  const addStepValid =
+    newStepId.trim().length > 0 &&
+    /^0x[0-9a-f]{40}$/i.test(newProvider.trim()) &&
+    newPromise.trim().length > 0 &&
+    Number.isInteger(feeWeight) &&
+    feeWeight > 0;
 
   return (
     <section className="page">
@@ -108,10 +152,98 @@ export function WorkflowRoomPage() {
               {isActionVisible({
                 role: workflow.role,
                 status: workflow.status,
+                action: "addStep"
+              }) && (
+                <form className="field-grid" onSubmit={(event) => event.preventDefault()}>
+                  <label>
+                    Step ID
+                    <input
+                      required
+                      value={newStepId}
+                      onChange={(event) => setNewStepId(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Provider address
+                    <input
+                      className="mono"
+                      required
+                      pattern="0x[0-9a-fA-F]{40}"
+                      value={newProvider}
+                      onChange={(event) => setNewProvider(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Step promise
+                    <textarea
+                      required
+                      value={newPromise}
+                      onChange={(event) => setNewPromise(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Dependencies
+                    <input
+                      placeholder="step-plan,step-build"
+                      value={newDependencies}
+                      onChange={(event) => setNewDependencies(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Fee weight
+                    <input
+                      min="1"
+                      required
+                      step="1"
+                      type="number"
+                      value={newFeeWeight}
+                      onChange={(event) => setNewFeeWeight(event.target.value)}
+                    />
+                  </label>
+                  <LiveTraceSettleAction
+                    className="button secondary"
+                    disabled={!addStepValid}
+                    onCanonicalReload={refreshCanonicalWorkflow}
+                    action={(adapter) =>
+                      adapter.addStep({
+                        workflowId: workflow.id,
+                        stepId: newStepId.trim(),
+                        provider: newProvider.trim(),
+                        promise: newPromise.trim(),
+                        dependencies: newDependencies
+                          .split(",")
+                          .map((dependency) => dependency.trim())
+                          .filter(Boolean),
+                        feeWeight
+                      })
+                    }
+                  >
+                    Add provider step
+                  </LiveTraceSettleAction>
+                </form>
+              )}
+              {isActionVisible({
+                role: workflow.role,
+                status: workflow.status,
+                action: "activateWorkflow"
+              }) && (
+                <LiveTraceSettleAction
+                  className="button primary"
+                  disabled={workflow.steps.length === 0}
+                  onCanonicalReload={refreshCanonicalWorkflow}
+                  action={(adapter) => adapter.activateWorkflow(workflow.id)}
+                >
+                  Activate workflow
+                </LiveTraceSettleAction>
+              )}
+              {isActionVisible({
+                role: workflow.role,
+                status: workflow.status,
                 action: "lockEvidence"
               }) && (
                 <LiveTraceSettleAction
                   className="button primary"
+                  onCanonicalReload={refreshCanonicalWorkflow}
                   action={(adapter) => adapter.lockEvidence(workflow.id)}
                 >
                   Lock evidence
@@ -121,12 +253,26 @@ export function WorkflowRoomPage() {
                 role: workflow.role,
                 status: workflow.status,
                 action: "requestReview"
-              }) && (
+              }) && workflow.status === "EVIDENCE_LOCKED" && (
                 <LiveTraceSettleAction
                   className="button secondary"
+                  onCanonicalReload={refreshCanonicalWorkflow}
                   action={(adapter) => adapter.requestReview(workflow.id)}
                 >
                   Request review
+                </LiveTraceSettleAction>
+              )}
+              {isActionVisible({
+                role: workflow.role,
+                status: workflow.status,
+                action: "retryReview"
+              }) && (
+                <LiveTraceSettleAction
+                  className="button secondary"
+                  onCanonicalReload={refreshCanonicalWorkflow}
+                  action={(adapter) => adapter.retryReview(workflow.id)}
+                >
+                  Retry review
                 </LiveTraceSettleAction>
               )}
               {isActionVisible({
@@ -136,6 +282,7 @@ export function WorkflowRoomPage() {
               }) && (
                 <LiveTraceSettleAction
                   className="button danger"
+                  onCanonicalReload={refreshCanonicalWorkflow}
                   action={(adapter) => adapter.cancelWorkflow(workflow.id)}
                 >
                   Cancel safely

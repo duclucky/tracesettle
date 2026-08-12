@@ -87,13 +87,19 @@ export interface CreditsView {
 
 export interface CreateWorkflowInput {
   objective: string;
-  providerAddresses: string[];
   poolGen: 2;
 }
 
 export interface StepActionInput {
   workflowId: string;
   stepId: string;
+}
+
+export interface AddStepInput extends StepActionInput {
+  provider: string;
+  promise: string;
+  dependencies: string[];
+  feeWeight: number;
 }
 
 export interface SubmitEvidenceInput extends StepActionInput {
@@ -113,6 +119,8 @@ export interface TraceSettleAdapter {
   getWorkflow(id: string): Promise<WorkflowSummary | undefined>;
   getCredits(address: string): Promise<CreditsView>;
   createWorkflow(input: CreateWorkflowInput): Promise<TransactionResult>;
+  addStep(input: AddStepInput): Promise<TransactionResult>;
+  activateWorkflow(id: string): Promise<TransactionResult>;
   acceptStep(input: StepActionInput): Promise<TransactionResult>;
   submitEvidence(input: SubmitEvidenceInput): Promise<TransactionResult>;
   lockEvidence(id: string): Promise<TransactionResult>;

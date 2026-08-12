@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createGenLayerTraceSettleAdapter } from "../adapters/genlayerAdapter";
 import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
+import { discoverAuthorizedWallet, type WalletEnvironment } from "../adapters/wallet";
 import { WorkflowList } from "../components/WorkflowList";
 import { workflows } from "../domain/fixtures";
 import type { WorkflowStatus, WorkflowSummary } from "../domain/types";
@@ -28,7 +29,8 @@ export function WorkflowInboxPage() {
 
   useEffect(() => {
     let disposed = false;
-    if (runtime.mode !== "live" || !runtime.contractAddress) {
+    const contractAddress = runtime.contractAddress;
+    if (runtime.mode !== "live" || !contractAddress) {
       setItems(workflows);
       setReadState(`${runtime.reason}. Showing labeled preview rows.`);
       return () => {
@@ -36,9 +38,16 @@ export function WorkflowInboxPage() {
       };
     }
 
-    const adapter = createGenLayerTraceSettleAdapter({ address: runtime.contractAddress });
-    adapter
-      .listWorkflows("")
+    const environment =
+      typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment);
+    discoverAuthorizedWallet(environment)
+      .then((wallet) =>
+        createGenLayerTraceSettleAdapter({
+          address: contractAddress,
+          account: wallet.address,
+          provider: wallet.provider
+        }).listWorkflows(wallet.address ?? "")
+      )
       .then((canonicalWorkflows) => {
         if (disposed) {
           return;

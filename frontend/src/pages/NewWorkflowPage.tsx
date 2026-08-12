@@ -47,7 +47,6 @@ export function NewWorkflowPage() {
             action={(adapter) =>
               adapter.createWorkflow({
                 objective: objective.trim(),
-                providerAddresses: ["0x2222222222222222222222222222222222222222"],
                 poolGen: 2
               })
             }
