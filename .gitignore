@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+dist/
+coverage/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.log
+*.local.json
+docs/evidence/*/*.local.json
+
