@@ -2,6 +2,7 @@
 
 from genlayer import *
 from dataclasses import dataclass
+import hashlib
 import json
 
 
@@ -82,6 +83,40 @@ class TraceSettleContract(gl.Contract):
         if key not in self.credits:
             self.credits[key] = bigint(0)
         self.credits[key] = self.credits[key] + amount
+
+    def _step_ids(self, workflow: WorkflowRecord) -> DynArray[str]:
+        if workflow.step_ids == "":
+            return DynArray[str]()
+        return workflow.step_ids.split(",")
+
+    def _fee(self, workflow: WorkflowRecord, step: StepRecord) -> bigint:
+        return workflow.pool * step.fee_weight // workflow.total_fee_weight
+
+    def _class_for(self, classes: str, step_id: str) -> str:
+        entries = classes.split(";")
+        for entry in entries:
+            parts = entry.split("=")
+            if len(parts) == 2 and parts[0] == step_id:
+                return parts[1]
+        return ""
+
+    def _classes_cover_steps(self, workflow: WorkflowRecord, classes: str) -> bool:
+        ids = self._step_ids(workflow)
+        for step_id in ids:
+            if self._class_for(classes, step_id) == "":
+                return False
+        return True
+
+    def _is_directly_blocked(self, workflow_id: str, fault_step_id: str, candidate_id: str) -> bool:
+        candidate = self.steps[self._step_key(workflow_id, candidate_id)]
+        deps = candidate.dependencies.split(",") if candidate.dependencies != "" else DynArray[str]()
+        for dep in deps:
+            if dep == fault_step_id:
+                return True
+        return False
+
+    def _hash_rendered_text(self, text: str) -> str:
+        return "sha256:" + hashlib.sha256(text.encode()).hexdigest()
 
     @gl.public.write.payable
     def create_workflow(self, workflow_id: str, objective: str) -> None:
@@ -191,6 +226,11 @@ class TraceSettleContract(gl.Contract):
         workflow = self._require_sponsor(workflow_id)
         if workflow.status != "OPEN":
             raise gl.vm.UserError("wrong state")
+        ids = self._step_ids(workflow)
+        for step_id in ids:
+            step = self.steps[self._step_key(workflow_id, step_id)]
+            if step.evidence_url == "" or step.digest == "":
+                raise gl.vm.UserError("missing evidence")
         workflow.status = "EVIDENCE_LOCKED"
         self.workflows[workflow_id] = workflow
 
@@ -201,12 +241,65 @@ class TraceSettleContract(gl.Contract):
             raise gl.vm.UserError("already settled")
         if workflow.status not in ("EVIDENCE_LOCKED", "RETRYABLE"):
             raise gl.vm.UserError("wrong state")
+        step_ids = self._step_ids(workflow)
+        evidence_pack = ""
+        fetch_plan = ""
+        for step_id in step_ids:
+            step = self.steps[self._step_key(workflow_id, step_id)]
+            evidence_pack = (
+                evidence_pack
+                + "\nSTEP "
+                + step_id
+                + "\nPROMISE "
+                + step.promise
+                + "\nDEPENDENCIES "
+                + step.dependencies
+                + "\nURL "
+                + step.evidence_url
+                + "\nDIGEST "
+                + step.digest
+            )
+            fetch_plan = fetch_plan + step_id + "\t" + step.evidence_url + "\t" + step.digest + "\n"
 
         def leader_fn():
+            rendered = ""
+            rows = fetch_plan.split("\n")
+            for row in rows:
+                if row == "":
+                    continue
+                parts = row.split("\t")
+                if len(parts) != 3:
+                    return {
+                        "verdict": "UNVERIFIABLE",
+                        "coverage": "INCOMPLETE",
+                        "classes": "",
+                        "roots": "",
+                        "reason": "malformed fetch plan",
+                    }
+                step_id = parts[0]
+                url = parts[1]
+                digest = parts[2]
+                page = gl.nondet.web.render(url, mode="text")
+                computed = "sha256:" + hashlib.sha256(page.encode()).hexdigest()
+                if computed != digest:
+                    return {
+                        "verdict": "UNVERIFIABLE",
+                        "coverage": "INCOMPLETE",
+                        "classes": "",
+                        "roots": "",
+                        "reason": "digest mismatch",
+                    }
+                rendered = rendered + "\nSTEP " + step_id + "\n" + page
             prompt = (
                 "Classify the locked TraceSettle workflow. "
-                'Reply JSON: {"verdict":"SUCCESS|MATERIAL_FAILURE|UNVERIFIABLE",'
-                '"coverage":"COMPLETE|INCOMPLETE","reason":str}'
+                "Use only these step IDs and preserve their order. "
+                + evidence_pack
+                + "\nEVIDENCE\n"
+                + rendered
+                + '\nReply JSON: {"verdict":"SUCCESS|MATERIAL_FAILURE|UNVERIFIABLE",'
+                + '"coverage":"COMPLETE|INCOMPLETE",'
+                + '"classes":"step_id=SATISFIED|MATERIAL_FAULT|DOWNSTREAM_BLOCKED;...",'
+                + '"roots":"comma separated root fault step IDs","reason":str}'
             )
             return gl.nondet.exec_prompt(prompt, response_format="json")
 
@@ -214,7 +307,12 @@ class TraceSettleContract(gl.Contract):
             if not isinstance(leader_res, gl.vm.Return):
                 return False
             mine = leader_fn()
-            return mine["verdict"] == leader_res.calldata["verdict"]
+            return (
+                mine["verdict"] == leader_res.calldata["verdict"]
+                and mine.get("coverage", "") == leader_res.calldata.get("coverage", "")
+                and mine.get("classes", "") == leader_res.calldata.get("classes", "")
+                and mine.get("roots", "") == leader_res.calldata.get("roots", "")
+            )
 
         result = gl.vm.run_nondet(leader_fn, validator_fn)
         verdict = result["verdict"]
@@ -222,19 +320,102 @@ class TraceSettleContract(gl.Contract):
             workflow.status = "RETRYABLE"
             self.workflows[workflow_id] = workflow
             return
-        workflow.status = "SETTLED"
-        workflow.settled = True
-        self._add_credit(workflow.sponsor, workflow.pool)
-        workflow.pool = bigint(0)
+        classes = result.get("classes", "")
+        roots = result.get("roots", "")
+        if not self._classes_cover_steps(workflow, classes):
+            workflow.status = "RETRYABLE"
+            self.workflows[workflow_id] = workflow
+            return
+        if verdict == "SUCCESS":
+            self._settle_success(workflow_id, workflow, classes)
+        elif verdict == "MATERIAL_FAILURE":
+            if roots == "":
+                workflow.status = "RETRYABLE"
+                self.workflows[workflow_id] = workflow
+                return
+            self._settle_material_failure(workflow_id, workflow, classes, roots)
+        else:
+            raise gl.vm.UserError("invalid verdict")
         self.attempts[workflow_id] = AttemptRecord(
             verdict=verdict,
             coverage=result.get("coverage", "COMPLETE"),
-            root_cause_steps="",
+            root_cause_steps=roots,
             consequence_class="PAY_ALL" if verdict == "SUCCESS" else "NET_FAULT",
             reason=result.get("reason", ""),
             finalized=True,
         )
+
+    def _settle_success(self, workflow_id: str, workflow: WorkflowRecord, classes: str) -> None:
+        paid = bigint(0)
+        ids = self._step_ids(workflow)
+        for step_id in ids:
+            if self._class_for(classes, step_id) != "SATISFIED":
+                raise gl.vm.UserError("invalid success class")
+            key = self._step_key(workflow_id, step_id)
+            step = self.steps[key]
+            fee = self._fee(workflow, step)
+            paid = paid + fee
+            self._add_credit(step.provider, step.bond + fee)
+            step.bond = bigint(0)
+            step.step_class = "SATISFIED"
+            self.steps[key] = step
+        if workflow.pool > paid:
+            self._add_credit(workflow.sponsor, workflow.pool - paid)
+        workflow.pool = bigint(0)
+        workflow.status = "SETTLED"
+        workflow.settled = True
         self.workflows[workflow_id] = workflow
+
+    def _settle_material_failure(
+        self, workflow_id: str, workflow: WorkflowRecord, classes: str, roots: str
+    ) -> None:
+        ids = self._step_ids(workflow)
+        for step_id in ids:
+            key = self._step_key(workflow_id, step_id)
+            step = self.steps[key]
+            step_class = self._class_for(classes, step_id)
+            fee = self._fee(workflow, step)
+            if step_class == "SATISFIED" or step_class == "DOWNSTREAM_BLOCKED":
+                self._add_credit(step.provider, step.bond + fee)
+            elif step_class == "MATERIAL_FAULT":
+                self._add_credit(workflow.sponsor, fee)
+                self._distribute_fault_bond(workflow_id, workflow, step_id, step.bond, classes)
+            else:
+                raise gl.vm.UserError("invalid class")
+            step.bond = bigint(0)
+            step.step_class = step_class
+            self.steps[key] = step
+        workflow.pool = bigint(0)
+        workflow.status = "SETTLED"
+        workflow.settled = True
+        self.workflows[workflow_id] = workflow
+
+    def _distribute_fault_bond(
+        self, workflow_id: str, workflow: WorkflowRecord, fault_step_id: str, bond: bigint, classes: str
+    ) -> None:
+        blocked_count = u256(0)
+        ids = self._step_ids(workflow)
+        for candidate_id in ids:
+            if (
+                self._class_for(classes, candidate_id) == "DOWNSTREAM_BLOCKED"
+                and self._is_directly_blocked(workflow_id, fault_step_id, candidate_id)
+            ):
+                blocked_count = blocked_count + u256(1)
+        if blocked_count == 0:
+            self._add_credit(workflow.sponsor, bond)
+            return
+        share = bond // blocked_count
+        paid = bigint(0)
+        for candidate_id in ids:
+            if (
+                self._class_for(classes, candidate_id) == "DOWNSTREAM_BLOCKED"
+                and self._is_directly_blocked(workflow_id, fault_step_id, candidate_id)
+            ):
+                provider = self.steps[self._step_key(workflow_id, candidate_id)].provider
+                self._add_credit(provider, share)
+                paid = paid + share
+        if bond > paid:
+            self._add_credit(workflow.sponsor, bond - paid)
 
     @gl.public.write
     def retry_review(self, workflow_id: str) -> None:
@@ -255,6 +436,14 @@ class TraceSettleContract(gl.Contract):
             raise gl.vm.UserError("wrong state")
         self._add_credit(workflow.sponsor, workflow.pool)
         workflow.pool = bigint(0)
+        ids = self._step_ids(workflow)
+        for step_id in ids:
+            key = self._step_key(workflow_id, step_id)
+            step = self.steps[key]
+            if step.bond > 0:
+                self._add_credit(step.provider, step.bond)
+                step.bond = bigint(0)
+                self.steps[key] = step
         workflow.cancelled = True
         workflow.status = "CANCELLED"
         self.workflows[workflow_id] = workflow

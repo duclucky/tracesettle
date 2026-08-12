@@ -352,28 +352,28 @@ Expected: commit succeeds.
 
 **Interfaces:**
 - Produces: one `TraceSettleContract(gl.Contract)` class
-- Produces views: `get_workflow`, `get_step`, `get_attempt`, `get_credit`, `list_workflows`
+- Produces views: `get_workflow`, `get_workflow_step_ids`, `get_step`, `get_attempt`, `get_credit`, `list_workflows`
 - Produces writes: `create_workflow`, `add_step`, `activate_workflow`, `accept_step`, `submit_evidence`, `lock_evidence`, `request_review`, `retry_review`, `cancel_workflow`, `withdraw_credit`
 
-- [ ] **Step 1: Write failing static guardrail tests**
+- [x] **Step 1: Write failing static guardrail tests**
 
 Tests assert ASCII source, first line `# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }`, exactly one `gl.Contract` subclass, payable methods for value entrypoints, no `gl.eth.send_value`, and GEN constants named in comments.
 
-- [ ] **Step 2: Write failing model tests**
+- [x] **Step 2: Write failing model tests**
 
 Tests cover success settlement, material fault settlement, retryable unverifiable path, wrong caller, duplicate settlement, duplicate withdrawal, digest mismatch, unknown dependency, DAG cycle, and accounting sum invariant.
 
-- [ ] **Step 3: Run failing tests**
+- [x] **Step 3: Run failing tests**
 
 Run: `python -m pytest tests/direct/test_tracesettle_static.py tests/direct/test_tracesettle_model.py -q`
 
 Expected before implementation: fails because contract/model files are absent.
 
-- [ ] **Step 4: Implement contract and deterministic model**
+- [x] **Step 4: Implement contract and deterministic model**
 
 Implement storage records, explicit state transitions, objective evidence gates, digest mismatch handling, semantic result normalization, deterministic settlement, and idempotency-protected withdrawal. Use `gl.vm.run_nondet` for semantic review unless current local lint/runtime proves it unavailable.
 
-- [ ] **Step 5: Run lint and direct tests**
+- [x] **Step 5: Run lint and direct tests**
 
 Run:
 
@@ -385,7 +385,7 @@ python -m pytest tests/direct -q
 
 Expected: linter passes and all direct tests pass. If `genvm-lint` is unavailable on PATH, record the exact command failure and keep static guardrails passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Run:
 
@@ -408,7 +408,7 @@ Expected: commit succeeds.
 **Interfaces:**
 - Produces: root `npm run check`
 
-- [ ] **Step 1: Add root check script**
+- [x] **Step 1: Add root check script**
 
 Root `package.json` scripts:
 
@@ -423,13 +423,13 @@ Root `package.json` scripts:
 }
 ```
 
-- [ ] **Step 2: Run check**
+- [x] **Step 2: Run check**
 
 Run: `npm run check`
 
 Expected: all local checks pass or the unavailable local linter is recorded as the only local tooling blocker before network work.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 Run:
 

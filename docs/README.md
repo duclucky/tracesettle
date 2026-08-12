@@ -522,7 +522,8 @@ change value destinations or legal actions.
 
 ## Frontend baseline
 
-Phase 3A and 3B local frontend baseline is recorded in
+Contract hardening evidence is recorded in
+`docs/evidence/local/contract-hardening.md`. Phase 3A and 3B local frontend baseline is recorded in
 `docs/evidence/local/frontend-baseline.md`. Phase 7 local SDK/wallet/read-path
 integration is recorded in `docs/evidence/local/frontend-integration.md`. The
 frontend route map is built, tested, production-built, and wired behind the
@@ -532,10 +533,11 @@ availability.
 
 ## Honest limitations
 
-At SELECTED status, TraceSettle has approved design, frontend design system
-artifacts, and local frontend baseline evidence only. It does not yet claim
-contract code, Studionet deployment, browser-wallet evidence, public repo,
-Vercel deployment, lifecycle evidence, Portal submission, or external adoption.
+At BUILDING status, TraceSettle has approved design, a local contract, direct
+tests, frontend design-system artifacts, local frontend evidence, and local
+SDK/wallet/read-path integration evidence. It does not yet claim Studionet
+deployment, browser-wallet evidence, public repo, Vercel deployment, lifecycle
+evidence, Portal submission, or external adoption.
 
 ## Kill criteria
 

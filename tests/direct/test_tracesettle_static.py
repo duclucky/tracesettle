@@ -58,3 +58,15 @@ def test_recovery_and_value_methods_exist():
         "get_credit",
     ]:
         assert f"def {method}(" in text
+
+
+def test_review_path_fetches_evidence_checks_digest_and_maps_value():
+    text = source()
+    assert "import hashlib" in text
+    assert "gl.nondet.web.render" in text
+    assert "fetch_plan" in text
+    assert "_hash_rendered_text" in text
+    assert "MATERIAL_FAILURE" in text
+    assert "DOWNSTREAM_BLOCKED" in text
+    assert "_settle_success" in text
+    assert "_settle_material_failure" in text
