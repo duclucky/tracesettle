@@ -62,6 +62,23 @@ describe("TraceSettle route map", () => {
     expect(screen.getByText("No browser wallet detected")).toBeInTheDocument();
   });
 
+  it("keeps one missing-wallet status after Connect wallet is pressed", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <AppRoutes />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Connect wallet" }));
+
+    expect(screen.getAllByText("No browser wallet detected")).toHaveLength(1);
+    expect(screen.getByText("No browser wallet detected")).toHaveAttribute(
+      "aria-live",
+      "polite"
+    );
+  });
+
   it("blocks live actions honestly until a contract address is configured", async () => {
     const user = userEvent.setup();
     render(

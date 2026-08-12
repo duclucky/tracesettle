@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
-import { connectInjectedWallet, detectInjectedWallet } from "../adapters/wallet";
+import {
+  connectInjectedWallet,
+  discoverInjectedWallet,
+  type WalletEnvironment
+} from "../adapters/wallet";
 import type { TraceSettleAdapter, TransactionResult } from "../domain/types";
 import { TransactionState, type TransactionStage } from "./TransactionState";
 
@@ -38,8 +42,8 @@ export function LiveTraceSettleAction({
       return;
     }
 
-    const detection = detectInjectedWallet(
-      typeof window === "undefined" ? {} : (window as Window & { ethereum?: unknown })
+    const detection = await discoverInjectedWallet(
+      typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment)
     );
     if (!detection.provider) {
       setStage("failed");

@@ -1,36 +1,49 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
 import {
   connectInjectedWallet,
   detectInjectedWallet,
+  discoverInjectedWallet,
   shortenAddress,
-  type Eip1193Provider
+  type WalletEnvironment
 } from "../adapters/wallet";
 
 export function WalletStatus() {
   const runtime = resolveRuntimeConfig(import.meta.env);
-  const detection = useMemo(
-    () =>
-      detectInjectedWallet(
-        typeof window === "undefined" ? {} : (window as Window & { ethereum?: unknown })
-      ),
+  const environment = useMemo<WalletEnvironment>(
+    () => (typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment)),
     []
   );
-  const [provider] = useState<Eip1193Provider | undefined>(detection.provider);
+  const initialDetection = useMemo(() => detectInjectedWallet(environment), [environment]);
   const [address, setAddress] = useState<`0x${string}` | undefined>();
-  const [error, setError] = useState<string | undefined>();
+  const [statusMessage, setStatusMessage] = useState(initialDetection.label);
+
+  useEffect(() => {
+    let active = true;
+    void discoverInjectedWallet(environment).then((result) => {
+      if (active) {
+        setStatusMessage(result.label);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [environment]);
 
   async function connectWallet() {
-    if (!provider) {
-      setError("No browser wallet detected");
+    const detection = await discoverInjectedWallet(environment);
+    setStatusMessage(detection.label);
+    if (!detection.provider) {
       return;
     }
     try {
-      const result = await connectInjectedWallet(provider);
+      const result = await connectInjectedWallet(detection.provider);
       setAddress(result.address);
-      setError(result.status === "rejected" ? "Wallet did not return an account" : undefined);
+      setStatusMessage(
+        result.status === "connected" ? "Wallet connected" : "Wallet did not return an account"
+      );
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Wallet request failed");
+      setStatusMessage(cause instanceof Error ? cause.message : "Wallet request failed");
     }
   }
 
@@ -46,8 +59,7 @@ export function WalletStatus() {
         </button>
       )}
       {runtime.mode === "preview" && <span>{runtime.reason}</span>}
-      {detection.status === "missing" && <span>{detection.label}</span>}
-      {error && <span>{error}</span>}
+      <span aria-live="polite">{statusMessage}</span>
     </div>
   );
 }

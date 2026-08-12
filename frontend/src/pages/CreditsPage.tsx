@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { createGenLayerTraceSettleAdapter } from "../adapters/genlayerAdapter";
 import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
-import { connectInjectedWallet, detectInjectedWallet } from "../adapters/wallet";
+import {
+  connectInjectedWallet,
+  discoverInjectedWallet,
+  type WalletEnvironment
+} from "../adapters/wallet";
 import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { TransactionState } from "../components/TransactionState";
 import { credits } from "../domain/fixtures";
@@ -21,8 +25,8 @@ export function CreditsPage() {
       setReadState(`${runtime.reason}. Configure a deployed contract before reading credits.`);
       return;
     }
-    const detection = detectInjectedWallet(
-      typeof window === "undefined" ? {} : (window as Window & { ethereum?: unknown })
+    const detection = await discoverInjectedWallet(
+      typeof window === "undefined" ? {} : (window as unknown as WalletEnvironment)
     );
     if (!detection.provider) {
       setReadState("No browser wallet detected. Canonical credit read needs an account.");
