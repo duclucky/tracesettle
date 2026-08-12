@@ -6,9 +6,12 @@
 - Project name: TraceSettle
 - Project slug: tracesettle
 - Category: Projects
-- Status: BUILDING
-- Repository: local child repo at `D:\Genlayer Project\tracesettle`
+- Status: STUDIONET_VERIFIED
+- Repository: local child repo at `D:\Genlayer Project\tracesettle`; public remote pending
 - Target network: studionet
+- Active contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
+- Deployment evidence: `docs/evidence/studionet/deployment.json`
+- Lifecycle evidence: `docs/evidence/studionet/lifecycle.json`
 
 ## One-sentence product hook
 
@@ -64,7 +67,7 @@ Settle the failed workflow, not the loudest accusation.
 | Differentiation | PASS | Unlike bilateral escrow, access bonds, slot clearing, or successor transfer, TraceSettle classifies a multi-provider dependency graph after artifacts exist. |
 | Claim-to-code | PASS | Every product claim maps to planned writes, views, tests, and evidence in the implementation plan; Phase 4 locks exact method names before contract code. |
 | Full lifecycle | PASS | Planned lifecycle covers create, fund, accept, submit, lock, review, settle or retry, cancel, and withdraw. |
-| Scope honesty | PASS | V1 does not claim legal liability, offchain execution proof, private evidence, external adoption, browser-wallet proof, deployment, or Portal acceptance until proven. |
+| Scope honesty | PASS | V1 now claims local tests, Studionet deployment, and script-signed lifecycle evidence; it does not claim legal liability, offchain execution proof, private evidence, external adoption, browser-wallet write proof, Vercel availability, or Portal acceptance until proven. |
 
 ## Actors, roles and incentives
 
@@ -520,24 +523,48 @@ change value destinations or legal actions.
 - Resume/idempotency: scripts inspect deployment and lifecycle files before any
   write; finalized transactions are not replayed.
 
-## Frontend baseline
+## Verified evidence
 
 Contract hardening evidence is recorded in
 `docs/evidence/local/contract-hardening.md`. Phase 3A and 3B local frontend baseline is recorded in
 `docs/evidence/local/frontend-baseline.md`. Phase 7 local SDK/wallet/read-path
 integration is recorded in `docs/evidence/local/frontend-integration.md`. The
 frontend route map is built, tested, production-built, and wired behind the
-typed adapter boundary. This remains local frontend evidence only and does not
-prove browser-wallet writes, Studionet reads, deployment, or live app
-availability.
+typed adapter boundary.
+
+Studionet deployment evidence is recorded in
+`docs/evidence/studionet/deployment.json`:
+
+- contract address: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
+- deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`
+- status: `FINALIZED`
+- consensus result: `MAJORITY_AGREE`
+- deployment result: `SUCCESS`
+- schema verified: `true`
+
+Studionet lifecycle evidence is recorded in
+`docs/evidence/studionet/lifecycle.json`:
+
+- workflow: `trace-live-20260812-c`
+- final workflow status: `SETTLED`
+- final verdict: `SUCCESS`
+- consequence class: `PAY_ALL`
+- provider credit before withdrawal: `4 GEN`
+- provider credit after withdrawal: `0 GEN`
+- final step IDs: `step-plan`, `step-build`
+- both final steps read as `SATISFIED`
+
+Lifecycle records are allowlisted public fields only. Full Studio receipts,
+RPC payloads, validator configs, private keys, and raw stdout/stderr are not
+stored in the repository.
 
 ## Honest limitations
 
-At BUILDING status, TraceSettle has approved design, a local contract, direct
-tests, frontend design-system artifacts, local frontend evidence, and local
-SDK/wallet/read-path integration evidence. It does not yet claim Studionet
-deployment, browser-wallet evidence, public repo, Vercel deployment, lifecycle
-evidence, Portal submission, or external adoption.
+TraceSettle currently claims approved design, one GenVM contract, direct tests,
+frontend design-system artifacts, local frontend evidence, SDK/wallet/read-path
+integration, Studionet deployment, and script-signed Studionet lifecycle
+evidence. It does not yet claim browser-wallet write evidence, public repo,
+Vercel deployment, Portal submission, Portal acceptance, or external adoption.
 
 ## Kill criteria
 

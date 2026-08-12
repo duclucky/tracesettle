@@ -1,0 +1,60 @@
+# TraceSettle
+
+Settle the failed workflow, not the loudest accusation.
+
+TraceSettle is a GenLayer Projects-track application for multi-provider
+workflow settlement. A sponsor funds a bounded workflow in GEN, assigned
+providers post 1 GEN bonds and submit public artifact evidence, and one
+Intelligent Contract asks validators to classify step satisfaction, root cause,
+coverage, and the deterministic settlement consequence.
+
+## Verified status
+
+- Category: Projects
+- Network: Studionet
+- Contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
+- Deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`
+- Deployment: `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`
+- Lifecycle workflow: `trace-live-20260812-c`
+- Lifecycle result: `SUCCESS`
+- Final verdict: `SUCCESS`
+- Provider credit: `4 GEN` before withdrawal, `0 GEN` after withdrawal
+
+See:
+
+- `docs/README.md` for the full specification and gate evidence.
+- `docs/evidence/studionet/deployment.json` for allowlisted deployment proof.
+- `docs/evidence/studionet/lifecycle.json` for allowlisted lifecycle proof.
+
+## Build and verify
+
+```powershell
+npm install
+cd frontend
+npm install
+cd ..
+npm run check
+```
+
+`npm run check` runs:
+
+- `genvm-lint check` against `contracts/tracesettle.py`
+- direct Python tests
+- deployment receipt parser tests
+- frontend Vitest tests
+- production frontend build
+
+## Frontend configuration
+
+The frontend reads `VITE_CONTRACT_ADDRESS`. Local development can copy
+`frontend/.env.example` to `frontend/.env`.
+
+Only public `VITE_*` values belong in frontend env files. Private keys must stay
+in ignored project or parent `.env` files for deployment/lifecycle scripts.
+
+## Honest limits
+
+This repository proves local checks, Studionet deployment, and script-signed
+Studionet lifecycle evidence. It does not claim legal arbitration, private
+evidence support, offchain execution proof, browser-wallet write evidence,
+Portal acceptance, or external adoption.
