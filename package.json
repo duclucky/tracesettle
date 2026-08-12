@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "npm run check:frontend",
+    "check": "npm run check:contract && npm run check:tests && npm run check:frontend",
+    "check:contract": "set PYTHONUTF8=1&& .venv\\Scripts\\genvm-lint.exe check contracts/tracesettle.py",
+    "check:tests": ".venv\\Scripts\\python.exe -m pytest tests/direct -q",
     "check:frontend": "cd frontend && npm test && npm run build"
   }
 }
