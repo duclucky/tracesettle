@@ -35,7 +35,7 @@ if (
   existing.commit === git.commit &&
   existing.contract?.source_sha256 === contract.source_sha256 &&
   existing.status === "FINALIZED" &&
-  existing.result === "SUCCESS" &&
+  existing.deployment_result === "SUCCESS" &&
   existing.contract_address
 ) {
   console.log(
@@ -64,6 +64,13 @@ const receipt = await client.waitForTransactionReceipt({
   retries: 120
 });
 const summary = assertPublicReceiptSummary(summarizeReceipt({ ...receipt, transactionHash: txHash }));
+const schema = summary.contract_address ? await client.getContractSchema(summary.contract_address) : null;
+const methodNames = schema?.methods ? Object.keys(schema.methods).sort() : [];
+const schemaVerified =
+  methodNames.includes("create_workflow") &&
+  methodNames.includes("request_review") &&
+  methodNames.includes("withdraw_credit") &&
+  methodNames.includes("get_workflow_step_ids");
 
 const record = {
   network: "studionet",
@@ -72,8 +79,13 @@ const record = {
   contract,
   tx_hash: summary.tx_hash,
   status: summary.status,
-  result: summary.result,
+  consensus_result: summary.result,
+  deployment_result:
+    summary.status === "FINALIZED" && summary.contract_address && schemaVerified ? "SUCCESS" : "NEEDS_ATTENTION",
   contract_address: summary.contract_address,
+  schema_verified: schemaVerified,
+  method_count: methodNames.length,
+  methods: methodNames,
   captured_at: new Date().toISOString(),
   evidence_limit: "allowlisted deployment identity only; full receipt intentionally not stored"
 };
@@ -86,7 +98,8 @@ console.log(
       deployed: true,
       tx_hash: record.tx_hash,
       status: record.status,
-      result: record.result,
+      consensus_result: record.consensus_result,
+      deployment_result: record.deployment_result,
       contract_address: record.contract_address
     },
     null,
@@ -94,6 +107,6 @@ console.log(
   )
 );
 
-if (record.status !== "FINALIZED" || record.result !== "SUCCESS" || !record.contract_address) {
+if (record.status !== "FINALIZED" || record.deployment_result !== "SUCCESS" || !record.contract_address) {
   throw new Error("Deployment did not produce a finalized successful contract address");
 }

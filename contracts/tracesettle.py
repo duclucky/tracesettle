@@ -9,6 +9,15 @@ import json
 GEN = 10 ** 18
 
 
+@gl.evm.contract_interface
+class Recipient:
+    class View:
+        pass
+
+    class Write:
+        pass
+
+
 @allow_storage
 @dataclass
 class WorkflowRecord:
@@ -455,7 +464,7 @@ class TraceSettleContract(gl.Contract):
             raise gl.vm.UserError("no credit")
         amount = self.credits[key]
         self.credits[key] = bigint(0)
-        gl.get_contract_at(self._sender()).emit_transfer(value=u256(amount))
+        Recipient(self._sender()).emit_transfer(value=u256(amount))
 
     @gl.public.view
     def get_workflow(self, workflow_id: str) -> dict:

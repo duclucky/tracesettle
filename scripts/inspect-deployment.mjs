@@ -17,7 +17,9 @@ console.log(
             commit: existing.commit,
             contract_address: existing.contract_address,
             status: existing.status,
-            result: existing.result
+            consensus_result: existing.consensus_result,
+            deployment_result: existing.deployment_result,
+            schema_verified: existing.schema_verified
           }
         : null
     },

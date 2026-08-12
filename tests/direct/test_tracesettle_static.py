@@ -42,6 +42,8 @@ def test_value_entrypoints_are_payable_and_human_units_are_gen():
     assert "GEN = 10 ** 18" in text
     assert re.search(r"\bwei\b", text.lower()) is None
     assert "gl.eth.send_value" not in text
+    assert "@gl.evm.contract_interface" in text
+    assert "Recipient(self._sender()).emit_transfer" in text
 
 
 def test_recovery_and_value_methods_exist():
