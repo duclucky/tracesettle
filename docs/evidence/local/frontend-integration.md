@@ -9,6 +9,7 @@ Scope: Phase 7 local frontend integration. This is not Studionet browser-wallet 
 - Runtime config rejects missing or malformed `VITE_CONTRACT_ADDRESS` and keeps the UI in preview mode.
 - Browser wallet detection uses an injected EIP-1193 provider at action time; no fixture account is shown as connected.
 - Live action controls lazy-load the GenLayer SDK only when a user initiates an action.
+- Live read screens call canonical contract views for workflow IDs, workflow summaries, workflow step IDs, steps, and wallet credits when the required deployed address and wallet account are present.
 - `create_workflow` sends exactly 2 GEN, `accept_step` sends exactly 1 GEN, and all write actions wait for `FINALIZED` before claiming canonical reload.
 - Fixture data remains local preview data and is labeled as such.
 
@@ -29,11 +30,11 @@ Output:
 > tracesettle@0.1.0 check:contract
 > set PYTHONUTF8=1&& .venv\Scripts\genvm-lint.exe check contracts/tracesettle.py
 
-✓ Lint passed (3 checks)
-✓ Validation passed
+[pass] Lint passed (3 checks)
+[pass] Validation passed
   Contract: TraceSettleContract
-  Methods: 15 (5 view, 10 write)
-  ℹ py-genlayer: a newer runner is available (9b8kjyda2ycxyq4ea6g4yfpnydxhd52gqba5rb8dw7krkh5mn9p0). See https://github.com/genlayerlabs/genvm/releases for changes.
+  Methods: 16 (6 view, 10 write)
+  Note: py-genlayer newer runner available; current Depends hash intentionally preserved until isolated migration.
 
 > tracesettle@0.1.0 check:tests
 > .venv\Scripts\python.exe -m pytest tests/direct -q
@@ -53,10 +54,10 @@ Output:
 > tracesettle-frontend@0.1.0 build
 > tsc --noEmit && vite build
 
-✓ built in 442ms
+[pass] built in 442ms
 ```
 
 ## Honest limits
 
-- This evidence proves local TypeScript, unit/component behavior, SDK wiring, and production build.
+- This evidence proves local TypeScript, unit/component behavior, SDK wiring, canonical read wiring, finality handling, and production build.
 - It does not prove a deployed Studionet browser transaction, accepted verdict, finalized verdict, wallet balance, or Explorer state.

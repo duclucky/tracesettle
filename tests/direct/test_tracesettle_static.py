@@ -52,6 +52,7 @@ def test_recovery_and_value_methods_exist():
         "cancel_workflow",
         "withdraw_credit",
         "get_workflow",
+        "get_workflow_step_ids",
         "get_step",
         "get_attempt",
         "get_credit",

@@ -418,7 +418,7 @@ change value destinations or legal actions.
 ### Write methods
 
 - `create_workflow(workflow_id: str, objective: str) payable`
-- `add_step(workflow_id: str, step_id: str, provider: Address, promise: str, dependencies: DynArray[str], fee_weight: u256)`
+- `add_step(workflow_id: str, step_id: str, provider: Address, promise: str, dependencies: str, fee_weight: u256)`
 - `activate_workflow(workflow_id: str)`
 - `accept_step(workflow_id: str, step_id: str) payable`
 - `submit_evidence(workflow_id: str, step_id: str, url: str, digest: str)`
@@ -431,6 +431,7 @@ change value destinations or legal actions.
 ### View methods
 
 - `get_workflow(workflow_id: str) -> dict`
+- `get_workflow_step_ids(workflow_id: str) -> str`
 - `get_step(workflow_id: str, step_id: str) -> dict`
 - `get_attempt(workflow_id: str) -> dict`
 - `get_credit(owner: Address) -> dict`
@@ -522,10 +523,12 @@ change value destinations or legal actions.
 ## Frontend baseline
 
 Phase 3A and 3B local frontend baseline is recorded in
-`docs/evidence/local/frontend-baseline.md`. The frontend route map is built,
-tested, and production-built behind the typed adapter boundary. This remains
-local frontend evidence only and does not prove browser-wallet writes,
-Studionet reads, deployment, or live app availability.
+`docs/evidence/local/frontend-baseline.md`. Phase 7 local SDK/wallet/read-path
+integration is recorded in `docs/evidence/local/frontend-integration.md`. The
+frontend route map is built, tested, production-built, and wired behind the
+typed adapter boundary. This remains local frontend evidence only and does not
+prove browser-wallet writes, Studionet reads, deployment, or live app
+availability.
 
 ## Honest limitations
 

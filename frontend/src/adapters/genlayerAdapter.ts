@@ -2,7 +2,9 @@ import { chains, createClient } from "genlayer-js";
 import type {
   CreateWorkflowInput,
   CreditsView,
+  StepClass,
   StepActionInput,
+  StepSummary,
   SubmitEvidenceInput,
   TraceSettleAdapter,
   TransactionResult,
@@ -23,7 +25,7 @@ interface GenLayerClientLike {
 
 interface AdapterOptions {
   address: `0x${string}`;
-  account: `0x${string}`;
+  account?: `0x${string}`;
   provider?: Eip1193Provider;
   client?: GenLayerClientLike;
 }
@@ -68,6 +70,33 @@ function toWorkflowSummary(id: string, raw: ContractRead): WorkflowSummary | und
   };
 }
 
+function splitIds(raw: unknown): string[] {
+  if (typeof raw !== "string" || raw.trim() === "") {
+    return [];
+  }
+  return raw
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function toStepSummary(id: string, raw: ContractRead): StepSummary {
+  return {
+    id,
+    title: id,
+    provider: String(raw.provider ?? ""),
+    providerLabel: "Provider",
+    promise: String(raw.promise ?? ""),
+    dependencies: splitIds(raw.dependencies),
+    feeGen: 0,
+    bondGen: genFromBaseUnits(raw.bond),
+    accepted: raw.accepted === true,
+    evidenceUrl: String(raw.evidence_url ?? "") || undefined,
+    digest: String(raw.digest ?? "") || undefined,
+    class: String(raw.step_class ?? "PENDING") as StepClass
+  };
+}
+
 function statusName(receipt: Record<string, unknown>): string {
   return String(receipt.statusName ?? receipt.status ?? "").toUpperCase();
 }
@@ -105,6 +134,31 @@ export function createGenLayerTraceSettleAdapter(options: AdapterOptions): Trace
     );
   }
 
+  async function readStepIds(id: string) {
+    return splitIds(
+      await client.readContract({
+        address: options.address,
+        functionName: "get_workflow_step_ids",
+        args: [id],
+        jsonSafeReturn: true
+      })
+    );
+  }
+
+  async function readStep(workflowId: string, stepId: string) {
+    return toStepSummary(
+      stepId,
+      asRecord(
+        await client.readContract({
+          address: options.address,
+          functionName: "get_step",
+          args: [workflowId, stepId],
+          jsonSafeReturn: true
+        })
+      )
+    );
+  }
+
   async function write(functionName: string, args: unknown[], value = 0n) {
     const hash = await client.writeContract({
       address: options.address,
@@ -130,7 +184,13 @@ export function createGenLayerTraceSettleAdapter(options: AdapterOptions): Trace
       return workflows.filter((workflow): workflow is WorkflowSummary => workflow !== undefined);
     },
     async getWorkflow(id: string) {
-      return toWorkflowSummary(id, await readWorkflow(id));
+      const workflow = toWorkflowSummary(id, await readWorkflow(id));
+      if (!workflow) {
+        return undefined;
+      }
+      const stepIds = await readStepIds(id);
+      workflow.steps = await Promise.all(stepIds.map((stepId) => readStep(id, stepId)));
+      return workflow;
     },
     async getCredits(address: string): Promise<CreditsView> {
       const raw = asRecord(

@@ -19,6 +19,7 @@ class WorkflowRecord:
     settled: bool
     cancelled: bool
     total_fee_weight: u256
+    step_ids: str
 
 
 @allow_storage
@@ -99,6 +100,7 @@ class TraceSettleContract(gl.Contract):
             settled=False,
             cancelled=False,
             total_fee_weight=u256(0),
+            step_ids="",
         )
         self.workflow_ids.append(workflow_id)
 
@@ -132,6 +134,10 @@ class TraceSettleContract(gl.Contract):
             step_class="PENDING",
         )
         workflow.total_fee_weight = workflow.total_fee_weight + fee_weight
+        if workflow.step_ids == "":
+            workflow.step_ids = step_id
+        else:
+            workflow.step_ids = workflow.step_ids + "," + step_id
         self.workflows[workflow_id] = workflow
 
     @gl.public.write
@@ -275,6 +281,12 @@ class TraceSettleContract(gl.Contract):
             "settled": workflow.settled,
             "cancelled": workflow.cancelled,
         }
+
+    @gl.public.view
+    def get_workflow_step_ids(self, workflow_id: str) -> str:
+        if workflow_id not in self.workflows:
+            return ""
+        return self.workflows[workflow_id].step_ids
 
     @gl.public.view
     def get_step(self, workflow_id: str, step_id: str) -> dict:

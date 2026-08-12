@@ -1,8 +1,47 @@
+import { useState } from "react";
+import { createGenLayerTraceSettleAdapter } from "../adapters/genlayerAdapter";
+import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
+import { connectInjectedWallet, detectInjectedWallet } from "../adapters/wallet";
 import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { TransactionState } from "../components/TransactionState";
 import { credits } from "../domain/fixtures";
+import type { CreditsView } from "../domain/types";
 
 export function CreditsPage() {
+  const runtime = resolveRuntimeConfig(import.meta.env);
+  const [view, setView] = useState<CreditsView>(credits);
+  const [readState, setReadState] = useState(
+    runtime.mode === "live"
+      ? "Connect a browser wallet to read canonical credit for that account."
+      : `${runtime.reason}. Showing labeled preview credits.`
+  );
+
+  async function loadCredits() {
+    if (runtime.mode !== "live" || !runtime.contractAddress) {
+      setReadState(`${runtime.reason}. Configure a deployed contract before reading credits.`);
+      return;
+    }
+    const detection = detectInjectedWallet(
+      typeof window === "undefined" ? {} : (window as Window & { ethereum?: unknown })
+    );
+    if (!detection.provider) {
+      setReadState("No browser wallet detected. Canonical credit read needs an account.");
+      return;
+    }
+    const wallet = await connectInjectedWallet(detection.provider);
+    if (!wallet.address) {
+      setReadState("Wallet did not return an account. No canonical credit read was made.");
+      return;
+    }
+    const adapter = createGenLayerTraceSettleAdapter({
+      address: runtime.contractAddress,
+      account: wallet.address,
+      provider: detection.provider
+    });
+    setView(await adapter.getCredits(wallet.address));
+    setReadState("Loaded canonical credit from contract view for the connected wallet.");
+  }
+
   return (
     <section className="page">
       <div className="page-header">
@@ -16,9 +55,13 @@ export function CreditsPage() {
 
       <div className="grid two">
         <section className="panel stack">
-          <h2>{credits.totalAvailableGen} GEN available</h2>
+          <aside className={runtime.mode === "live" ? "notice" : "notice danger-note"}>
+            <strong>{runtime.mode === "live" ? "Contract read" : "Preview read"}</strong>
+            <p>{readState}</p>
+          </aside>
+          <h2>{view.totalAvailableGen} GEN available</h2>
           <div className="credit-list">
-            {credits.lines.map((line) => (
+            {view.lines.map((line) => (
               <article className="credit-line" key={`${line.workflowId}-${line.reason}`}>
                 <h3>{line.reason}</h3>
                 <p className="muted">
@@ -33,6 +76,9 @@ export function CreditsPage() {
           >
             Submit withdrawal
           </LiveTraceSettleAction>
+          <button className="button secondary" type="button" onClick={loadCredits}>
+            Read canonical credits
+          </button>
         </section>
         <TransactionState />
       </div>

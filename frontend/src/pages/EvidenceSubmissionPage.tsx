@@ -1,12 +1,72 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { createGenLayerTraceSettleAdapter } from "../adapters/genlayerAdapter";
+import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
 import { LiveTraceSettleAction } from "../components/LiveTraceSettleAction";
 import { TransactionState } from "../components/TransactionState";
 import { workflows } from "../domain/fixtures";
+import type { StepSummary, WorkflowSummary } from "../domain/types";
 
 export function EvidenceSubmissionPage() {
   const { workflowId, stepId } = useParams();
-  const workflow = workflows.find((item) => item.id === workflowId) ?? workflows[0];
-  const step = workflow.steps.find((item) => item.id === stepId) ?? workflow.steps[1];
+  const runtime = resolveRuntimeConfig(import.meta.env);
+  const previewWorkflow = workflows.find((item) => item.id === workflowId) ?? workflows[0];
+  const previewStep = previewWorkflow.steps.find((item) => item.id === stepId) ?? previewWorkflow.steps[1];
+  const [workflow, setWorkflow] = useState<WorkflowSummary>(previewWorkflow);
+  const [step, setStep] = useState<StepSummary>(previewStep);
+  const [readState, setReadState] = useState(
+    runtime.mode === "live" ? "Loading canonical step..." : runtime.reason
+  );
+
+  useEffect(() => {
+    let disposed = false;
+    if (runtime.mode !== "live" || !runtime.contractAddress || !workflowId || !stepId) {
+      setWorkflow(previewWorkflow);
+      setStep(previewStep);
+      setReadState(`${runtime.reason}. Showing labeled preview evidence fields.`);
+      return () => {
+        disposed = true;
+      };
+    }
+
+    createGenLayerTraceSettleAdapter({ address: runtime.contractAddress })
+      .getWorkflow(workflowId)
+      .then((canonicalWorkflow) => {
+        if (disposed) {
+          return;
+        }
+        if (!canonicalWorkflow) {
+          setReadState("Workflow was not found in canonical contract state.");
+          return;
+        }
+        const canonicalStep = canonicalWorkflow.steps.find((item) => item.id === stepId);
+        setWorkflow(canonicalWorkflow);
+        if (canonicalStep) {
+          setStep(canonicalStep);
+          setReadState("Loaded canonical step state from contract views.");
+          return;
+        }
+        setReadState("Step was not found in canonical contract state.");
+      })
+      .catch((error: unknown) => {
+        if (disposed) {
+          return;
+        }
+        setReadState(error instanceof Error ? error.message : "Canonical step read failed.");
+      });
+
+    return () => {
+      disposed = true;
+    };
+  }, [
+    previewStep,
+    previewWorkflow,
+    runtime.contractAddress,
+    runtime.mode,
+    runtime.reason,
+    stepId,
+    workflowId
+  ]);
 
   return (
     <section className="page">
@@ -21,6 +81,10 @@ export function EvidenceSubmissionPage() {
 
       <div className="grid two">
         <form className="form-panel field-grid">
+          <aside className={runtime.mode === "live" ? "notice" : "notice danger-note"}>
+            <strong>{runtime.mode === "live" ? "Contract read" : "Preview read"}</strong>
+            <p>{readState}</p>
+          </aside>
           <label>
             Artifact URL
             <input defaultValue={step.evidenceUrl ?? "https://example.com/tracesettle/trace-1001/build.json"} />

@@ -454,15 +454,15 @@ Expected: commit succeeds.
 - Consumes: finalized contract interface from Task 5
 - Produces: `createStudionetAdapter(provider, userAddress, contractAddress)` and EIP-6963 provider discovery
 
-- [ ] **Step 1: Write wallet and adapter tests**
+- [x] **Step 1: Write wallet and adapter tests**
 
 Tests assert missing contract address shows honest unavailable state, EIP-6963 providers are collected, Studionet switch/add uses chain id from `studionet.id`, and role/state action visibility does not change after integration.
 
-- [ ] **Step 2: Implement integration adapter**
+- [x] **Step 2: Implement integration adapter**
 
 Use `createClient({ chain: studionet, account: userAddress })` and pass the browser wallet address string. Keep private keys out of frontend env and source.
 
-- [ ] **Step 3: Run frontend tests and build**
+- [x] **Step 3: Run frontend tests and build**
 
 Run:
 
@@ -474,7 +474,7 @@ npm run build
 
 Expected: pass.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 Run:
 

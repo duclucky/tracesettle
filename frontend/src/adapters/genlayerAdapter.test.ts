@@ -12,14 +12,36 @@ function createClientStub() {
 describe("GenLayer TraceSettle adapter", () => {
   it("reads canonical workflow state from the configured contract", async () => {
     const client = createClientStub();
-    client.readContract.mockResolvedValue({
-      objective: "Ship a bounded workflow",
-      sponsor: "0x1111111111111111111111111111111111111111",
-      status: "OPEN",
-      pool: "2000000000000000000",
-      settled: false,
-      cancelled: false
-    });
+    client.readContract
+      .mockResolvedValueOnce({
+        objective: "Ship a bounded workflow",
+        sponsor: "0x1111111111111111111111111111111111111111",
+        status: "OPEN",
+        pool: "2000000000000000000",
+        settled: false,
+        cancelled: false
+      })
+      .mockResolvedValueOnce("step-plan,step-build")
+      .mockResolvedValueOnce({
+        provider: "0x3333333333333333333333333333333333333333",
+        promise: "Plan the workflow",
+        dependencies: "",
+        bond: "1000000000000000000",
+        accepted: true,
+        evidence_url: "https://example.com/plan.json",
+        digest: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        step_class: "SATISFIED"
+      })
+      .mockResolvedValueOnce({
+        provider: "0x4444444444444444444444444444444444444444",
+        promise: "Build the workflow",
+        dependencies: "step-plan",
+        bond: "0",
+        accepted: false,
+        evidence_url: "",
+        digest: "",
+        step_class: "PENDING"
+      });
     const adapter = createGenLayerTraceSettleAdapter({
       address: "0x1234567890123456789012345678901234567890",
       account: "0x2222222222222222222222222222222222222222",
@@ -32,10 +54,22 @@ describe("GenLayer TraceSettle adapter", () => {
       status: "OPEN",
       poolGen: 2
     });
-    expect(client.readContract).toHaveBeenCalledWith({
+    expect(client.readContract).toHaveBeenNthCalledWith(1, {
       address: "0x1234567890123456789012345678901234567890",
       functionName: "get_workflow",
       args: ["trace-1"],
+      jsonSafeReturn: true
+    });
+    expect(client.readContract).toHaveBeenNthCalledWith(2, {
+      address: "0x1234567890123456789012345678901234567890",
+      functionName: "get_workflow_step_ids",
+      args: ["trace-1"],
+      jsonSafeReturn: true
+    });
+    expect(client.readContract).toHaveBeenNthCalledWith(3, {
+      address: "0x1234567890123456789012345678901234567890",
+      functionName: "get_step",
+      args: ["trace-1", "step-plan"],
       jsonSafeReturn: true
     });
   });
