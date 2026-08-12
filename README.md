@@ -11,10 +11,11 @@ coverage, and the deterministic settlement consequence.
 ## Verified status
 
 - Category: Projects
-- Repository: https://github.com/duclucky/tracesettle
-- Live app: https://tracesettle-duckys-projects-bc83c6a0.vercel.app
+- Repository: https://github.com/duclucky/tracesettle-genlayer
+- Live app: https://tracesettle-genlayer.vercel.app
 - Network: Studionet
 - Contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
+- Explorer: https://explorer-studio.genlayer.com/address/0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313
 - Deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`
 - Deployment: `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`
 - Lifecycle workflow: `trace-live-20260812-c`
@@ -54,6 +55,20 @@ The frontend reads `VITE_CONTRACT_ADDRESS`. Local development can copy
 
 Only public `VITE_*` values belong in frontend env files. Private keys must stay
 in ignored project or parent `.env` files for deployment/lifecycle scripts.
+
+## Studionet deployment and lifecycle
+
+Deployment and lifecycle scripts are resumable and save only allowlisted public
+evidence:
+
+```powershell
+npm run inspect:deployment
+npm run deploy:studionet
+npm run lifecycle:studionet
+```
+
+The scripts discover ignored local secrets from project `.env` first, then the
+authorized parent workspace `.env`, and never print private key values.
 
 ## Honest limits
 

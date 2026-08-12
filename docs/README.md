@@ -7,10 +7,11 @@
 - Project slug: tracesettle
 - Category: Projects
 - Status: STUDIONET_VERIFIED
-- Repository: `https://github.com/duclucky/tracesettle`
-- Live app: `https://tracesettle-duckys-projects-bc83c6a0.vercel.app`
+- Repository: `https://github.com/duclucky/tracesettle-genlayer`
+- Live app: `https://tracesettle-genlayer.vercel.app`
 - Target network: studionet
 - Active contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
+- Explorer: `https://explorer-studio.genlayer.com/address/0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
 - Deployment evidence: `docs/evidence/studionet/deployment.json`
 - Lifecycle evidence: `docs/evidence/studionet/lifecycle.json`
 - Frontend live evidence: `docs/evidence/studionet/frontend-live.json`
@@ -563,9 +564,9 @@ stored in the repository.
 Production frontend evidence is recorded in
 `docs/evidence/studionet/frontend-live.json`:
 
-- public repository: `https://github.com/duclucky/tracesettle`
-- live app: `https://tracesettle-duckys-projects-bc83c6a0.vercel.app`
-- deployment id: `dpl_6gAgB29gnL6p8X7QMEbti1shsa7c`
+- public repository: `https://github.com/duclucky/tracesettle-genlayer`
+- live app: `https://tracesettle-genlayer.vercel.app`
+- deployment id: `dpl_HjtSA98J4i22znofmwfHidBt3F2V`
 - Vercel status: `Ready`
 - HTTP status: `200`
 - production JS contains deployed contract address:

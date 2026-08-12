@@ -1,13 +1,13 @@
 {
-  "public_repository": "https://github.com/duclucky/tracesettle",
-  "vercel_project": "tracesettle",
-  "deployment_id": "dpl_6gAgB29gnL6p8X7QMEbti1shsa7c",
-  "deployment_url": "https://tracesettle-plck281y6-duckys-projects-bc83c6a0.vercel.app",
-  "production_url": "https://tracesettle-duckys-projects-bc83c6a0.vercel.app",
+  "public_repository": "https://github.com/duclucky/tracesettle-genlayer",
+  "vercel_project": "tracesettle-genlayer",
+  "deployment_id": "dpl_HjtSA98J4i22znofmwfHidBt3F2V",
+  "deployment_url": "https://tracesettle-genlayer-3e5szcejf-duckys-projects-bc83c6a0.vercel.app",
+  "production_url": "https://tracesettle-genlayer.vercel.app",
   "target": "production",
   "status": "Ready",
   "http_check": {
-    "command": "Invoke-WebRequest -Uri 'https://tracesettle-duckys-projects-bc83c6a0.vercel.app' -UseBasicParsing",
+    "command": "Invoke-WebRequest -Method Head -Uri 'https://tracesettle-genlayer.vercel.app' -UseBasicParsing and Invoke-WebRequest -Uri 'https://tracesettle-genlayer.vercel.app' -UseBasicParsing",
     "status_code": 200,
     "html_length": 820,
     "has_tracesettle_text": true,
@@ -15,10 +15,10 @@
   },
   "runtime_config_check": {
     "command": "Fetch production JS assets and search for deployed contract address",
-    "script": "https://tracesettle-duckys-projects-bc83c6a0.vercel.app/assets/index-BUF6J-KU.js",
+    "script": "https://tracesettle-genlayer.vercel.app/assets/index-BlgngxHE.js",
     "contains_contract_address": true,
     "contract_address": "0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313"
   },
-  "captured_at": "2026-08-12T23:32:46.8252861+07:00",
+  "captured_at": "2026-08-13T00:03:31+07:00",
   "honest_limit": "This proves production availability and deployed-address frontend configuration. It does not prove browser-wallet writes."
 }

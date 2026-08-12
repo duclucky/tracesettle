@@ -10,5 +10,7 @@ coverage/
 __pycache__/
 *.pyc
 *.log
+precheck-report.*
+grade-report.*
 *.local.json
 docs/evidence/*/*.local.json
