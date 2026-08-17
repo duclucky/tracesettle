@@ -41,6 +41,7 @@ class ReviewResult:
     classes: dict[str, str]
     roots: list[str]
     reason: str
+    coverage: str = "COMPLETE"
 
     @classmethod
     def success(cls, step_ids: list[str]) -> "ReviewResult":
@@ -204,6 +205,7 @@ class TraceSettleModel:
         if result.verdict == "UNVERIFIABLE":
             workflow.status = "RETRYABLE"
             return
+        self._validate_settlement_result(workflow, result)
         if result.verdict == "SUCCESS":
             self._settle_success(workflow, result)
             return
@@ -216,10 +218,52 @@ class TraceSettleModel:
         total_weight = sum(item.fee_weight for item in workflow.steps.values())
         return workflow.pool * step.fee_weight // total_weight
 
-    def _settle_success(self, workflow: Workflow, result: ReviewResult) -> None:
+    def _validate_settlement_result(self, workflow: Workflow, result: ReviewResult) -> None:
         expected = set(workflow.steps)
+        if result.coverage != "COMPLETE":
+            raise TraceSettleError("coverage invariant")
         if set(result.classes) != expected:
-            raise TraceSettleError("missing step")
+            raise TraceSettleError("class invariant")
+        valid_classes = {"SATISFIED", "MATERIAL_FAULT", "DOWNSTREAM_BLOCKED"}
+        if any(step_class not in valid_classes for step_class in result.classes.values()):
+            raise TraceSettleError("class invariant")
+        roots = set(result.roots)
+        material_faults = {
+            step_id for step_id, step_class in result.classes.items()
+            if step_class == "MATERIAL_FAULT"
+        }
+        if result.verdict == "SUCCESS":
+            if roots or any(step_class != "SATISFIED" for step_class in result.classes.values()):
+                raise TraceSettleError("root invariant")
+            return
+        if result.verdict != "MATERIAL_FAILURE":
+            raise TraceSettleError("invalid verdict")
+        if not roots or roots != material_faults:
+            raise TraceSettleError("root invariant")
+        for step_id, step_class in result.classes.items():
+            if step_class == "DOWNSTREAM_BLOCKED" and not any(
+                self._has_dependency_path(workflow, root, step_id) for root in roots
+            ):
+                raise TraceSettleError("blocked invariant")
+
+    def _has_dependency_path(self, workflow: Workflow, root_step_id: str, candidate_id: str) -> bool:
+        visited: set[str] = set()
+
+        def visit(step_id: str) -> bool:
+            if step_id in visited:
+                return False
+            visited.add(step_id)
+            step = workflow.steps[step_id]
+            if root_step_id in step.dependencies:
+                return True
+            return any(
+                dependency in workflow.steps and visit(dependency)
+                for dependency in step.dependencies
+            )
+
+        return candidate_id in workflow.steps and root_step_id in workflow.steps and visit(candidate_id)
+
+    def _settle_success(self, workflow: Workflow, result: ReviewResult) -> None:
         paid = 0
         for step_id, step in workflow.steps.items():
             if result.classes[step_id] != "SATISFIED":
@@ -235,10 +279,6 @@ class TraceSettleModel:
         workflow.settled = True
 
     def _settle_material_failure(self, workflow: Workflow, result: ReviewResult) -> None:
-        expected = set(workflow.steps)
-        if set(result.classes) != expected:
-            raise TraceSettleError("missing step")
-        faulted = set(result.roots)
         for step_id, step_class in result.classes.items():
             workflow.steps[step_id].step_class = step_class
         paid_fees = 0
@@ -251,14 +291,15 @@ class TraceSettleModel:
             elif step_class == "MATERIAL_FAULT":
                 self._distribute_fault_bond(workflow, step_id, step.bond)
                 self._credit(workflow.sponsor, fee)
+                paid_fees += fee
             else:
                 raise TraceSettleError("invalid class")
             step.bond = 0
+        if workflow.pool > paid_fees:
+            self._credit(workflow.sponsor, workflow.pool - paid_fees)
         workflow.pool = 0
         workflow.status = "SETTLED"
         workflow.settled = True
-        if not faulted:
-            raise TraceSettleError("missing root cause")
 
     def _distribute_fault_bond(self, workflow: Workflow, fault_step_id: str, bond: int) -> None:
         blocked = [

@@ -5,6 +5,7 @@ import {
   detectInjectedWallet,
   discoverAuthorizedWallet,
   discoverInjectedWallet,
+  ensureGenLayerEvmNetwork,
   readAuthorizedWallet,
   shortenAddress,
   type WalletEnvironment,
@@ -131,6 +132,36 @@ describe("wallet adapter", () => {
         gasPrice: "0x1"
       })
     ]);
+  });
+
+  it("switches browser wallets to the GenLayer EVM chain before writes", async () => {
+    const request = vi.fn().mockResolvedValue(undefined);
+
+    await ensureGenLayerEvmNetwork({ request }, "https://rpc.testnet-chain.genlayer.com");
+
+    expect(request).toHaveBeenCalledWith({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: "0x107d" }]
+    });
+  });
+
+  it("adds the GenLayer EVM chain with the configured EVM RPC when missing", async () => {
+    const request = vi
+      .fn()
+      .mockRejectedValueOnce({ code: 4902, message: "unknown chain" })
+      .mockResolvedValueOnce(undefined);
+
+    await ensureGenLayerEvmNetwork({ request }, "https://rpc.testnet-chain.genlayer.com");
+
+    expect(request).toHaveBeenNthCalledWith(2, {
+      method: "wallet_addEthereumChain",
+      params: [
+        expect.objectContaining({
+          chainId: "0x107d",
+          rpcUrls: ["https://rpc.testnet-chain.genlayer.com"]
+        })
+      ]
+    });
   });
 
   it("reads an already-authorized account without requesting a connection", async () => {

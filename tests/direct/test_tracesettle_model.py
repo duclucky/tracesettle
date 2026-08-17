@@ -127,3 +127,77 @@ def test_cycle_and_duplicate_settlement_are_rejected():
     settled.request_review(SPONSOR, "trace-1", ReviewResult.success(["plan", "build", "cancel"]))
     with pytest.raises(TraceSettleError, match="already settled"):
         settled.request_review(SPONSOR, "trace-1", ReviewResult.success(["plan", "build", "cancel"]))
+
+
+def test_validator_roots_must_match_material_fault_classes_before_money_moves():
+    model = seeded_workflow()
+    before_locked = model.locked_total("trace-1")
+
+    with pytest.raises(TraceSettleError, match="root invariant"):
+        model.request_review(
+            SPONSOR,
+            "trace-1",
+            ReviewResult.material_failure(
+                classes={
+                    "plan": "SATISFIED",
+                    "build": "MATERIAL_FAULT",
+                    "cancel": "DOWNSTREAM_BLOCKED",
+                },
+                roots=["plan"],
+            ),
+        )
+
+    assert model.workflow("trace-1").status == "EVIDENCE_LOCKED"
+    assert model.locked_total("trace-1") == before_locked
+    assert model.credit(SPONSOR) == 0
+    assert model.credit(BUILD) == 0
+    assert model.credit(CANCEL) == 0
+
+
+def test_downstream_blocked_class_must_depend_on_a_root_fault_before_money_moves():
+    model = seeded_workflow()
+    before_locked = model.locked_total("trace-1")
+
+    with pytest.raises(TraceSettleError, match="blocked invariant"):
+        model.request_review(
+            SPONSOR,
+            "trace-1",
+            ReviewResult.material_failure(
+                classes={
+                    "plan": "DOWNSTREAM_BLOCKED",
+                    "build": "MATERIAL_FAULT",
+                    "cancel": "SATISFIED",
+                },
+                roots=["build"],
+            ),
+        )
+
+    assert model.workflow("trace-1").status == "EVIDENCE_LOCKED"
+    assert model.locked_total("trace-1") == before_locked
+    assert model.credit(PLAN) == 0
+    assert model.credit(SPONSOR) == 0
+
+
+def test_material_failure_settlement_credits_pool_rounding_residual_to_sponsor():
+    model = TraceSettleModel()
+    model.create_workflow(SPONSOR, "trace-round", "Rounding residual", 2 * GEN)
+    model.add_step(SPONSOR, "trace-round", "a", PLAN, "A", [], 1)
+    model.add_step(SPONSOR, "trace-round", "b", BUILD, "B", ["a"], 2)
+    model.activate_workflow(SPONSOR, "trace-round")
+    model.accept_step(PLAN, "trace-round", "a", GEN)
+    model.accept_step(BUILD, "trace-round", "b", GEN)
+    model.submit_evidence(PLAN, "trace-round", "a", "https://evidence.example/a.json", "sha256:a")
+    model.submit_evidence(BUILD, "trace-round", "b", "https://evidence.example/b.json", "sha256:b")
+    model.lock_evidence(SPONSOR, "trace-round")
+
+    model.request_review(
+        SPONSOR,
+        "trace-round",
+        ReviewResult.material_failure(
+            classes={"a": "MATERIAL_FAULT", "b": "DOWNSTREAM_BLOCKED"},
+            roots=["a"],
+        ),
+    )
+
+    assert model.locked_total("trace-round") == 0
+    assert model.credit(SPONSOR) == (2 * GEN // 3) + 1

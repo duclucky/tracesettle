@@ -29,12 +29,39 @@ interface AdapterOptions {
   address: `0x${string}`;
   account?: `0x${string}`;
   provider?: Eip1193Provider;
+  genlayerRpcUrl?: string;
+  evmRpcUrl?: string;
   client?: GenLayerClientLike;
+}
+
+interface TraceSettleChainOptions {
+  genlayerRpcUrl: string;
+  evmRpcUrl: string;
+}
+
+export function createTraceSettleChain(options: TraceSettleChainOptions) {
+  return {
+    ...chains.studionet,
+    rpcUrls: {
+      default: {
+        http: [options.genlayerRpcUrl]
+      }
+    },
+    evmRpcUrls: {
+      default: {
+        http: [options.evmRpcUrl]
+      }
+    }
+  };
 }
 
 function createSdkClient(options: AdapterOptions): GenLayerClientLike {
   return createClient({
-    chain: chains.studionet,
+    chain: createTraceSettleChain({
+      genlayerRpcUrl: options.genlayerRpcUrl ?? "/genlayer-rpc",
+      evmRpcUrl: options.evmRpcUrl ?? "https://rpc.testnet-chain.genlayer.com"
+    }),
+    endpoint: options.genlayerRpcUrl ?? "/genlayer-rpc",
     account: options.account,
     provider: options.provider ? (createBrowserWalletProvider(options.provider) as never) : undefined
   }) as unknown as GenLayerClientLike;

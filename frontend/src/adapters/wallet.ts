@@ -2,6 +2,8 @@ export interface Eip1193Provider {
   request(args: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<unknown>;
 }
 
+const genLayerEvmChainId = "0x107d";
+
 export interface WalletEnvironment {
   ethereum?: unknown;
   okxwallet?: unknown;
@@ -223,6 +225,35 @@ export async function connectInjectedWallet(provider: Eip1193Provider): Promise<
     status: "rejected",
     address: undefined
   };
+}
+
+export async function ensureGenLayerEvmNetwork(
+  provider: Eip1193Provider,
+  rpcUrl = "https://rpc.testnet-chain.genlayer.com"
+): Promise<void> {
+  try {
+    await provider.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: genLayerEvmChainId }]
+    });
+  } catch (cause) {
+    const code = objectProperty(cause, "code");
+    if (code !== 4902 && code !== "4902") {
+      throw cause;
+    }
+    await provider.request({
+      method: "wallet_addEthereumChain",
+      params: [
+        {
+          chainId: genLayerEvmChainId,
+          chainName: "GenLayer EVM",
+          nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 },
+          rpcUrls: [rpcUrl],
+          blockExplorerUrls: ["https://explorer.testnet-chain.genlayer.com/"]
+        }
+      ]
+    });
+  }
 }
 
 export async function readAuthorizedWallet(provider: Eip1193Provider): Promise<WalletConnection> {

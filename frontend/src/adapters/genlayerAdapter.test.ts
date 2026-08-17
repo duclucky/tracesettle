@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GEN, createGenLayerTraceSettleAdapter } from "./genlayerAdapter";
+import { GEN, createGenLayerTraceSettleAdapter, createTraceSettleChain } from "./genlayerAdapter";
 
 function createClientStub() {
   return {
@@ -12,6 +12,19 @@ function createClientStub() {
 describe("GenLayer TraceSettle adapter", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("keeps the GenLayer IC RPC and EVM wallet RPC as separate chain endpoints", () => {
+    expect(
+      createTraceSettleChain({
+        genlayerRpcUrl: "/genlayer-rpc",
+        evmRpcUrl: "https://rpc.testnet-chain.genlayer.com"
+      })
+    ).toMatchObject({
+      id: 61999,
+      rpcUrls: { default: { http: ["/genlayer-rpc"] } },
+      evmRpcUrls: { default: { http: ["https://rpc.testnet-chain.genlayer.com"] } }
+    });
   });
 
   it("derives the sponsor role from the connected canonical account", async () => {

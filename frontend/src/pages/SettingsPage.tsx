@@ -30,6 +30,15 @@ export function SettingsPage() {
             Missing configuration is shown honestly until a Studionet deployment is verified.
           </p>
         </section>
+        <section className="panel stack">
+          <h2>Network endpoints</h2>
+          <p className="mono">GenLayer IC RPC: {runtime.genlayerRpcUrl}</p>
+          <p className="mono">EVM wallet RPC: {runtime.evmRpcUrl}</p>
+          <p className="muted">
+            Browser reads use the same-origin GenLayer RPC proxy. Wallet transactions
+            use the GenLayer EVM chain endpoint.
+          </p>
+        </section>
       </div>
     </section>
   );

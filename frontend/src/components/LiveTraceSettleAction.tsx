@@ -3,6 +3,7 @@ import { resolveRuntimeConfig } from "../adapters/runtimeConfig";
 import {
   connectInjectedWallet,
   discoverInjectedWallet,
+  ensureGenLayerEvmNetwork,
   type WalletEnvironment,
   walletRequestErrorMessage
 } from "../adapters/wallet";
@@ -56,6 +57,7 @@ export function LiveTraceSettleAction({
     }
 
     try {
+      await ensureGenLayerEvmNetwork(detection.provider, runtime.evmRpcUrl);
       const wallet = await connectInjectedWallet(detection.provider);
       if (!wallet.address) {
         setStage("failed");
@@ -68,7 +70,9 @@ export function LiveTraceSettleAction({
       const adapter = createGenLayerTraceSettleAdapter({
         address: runtime.contractAddress,
         account: wallet.address,
-        provider: detection.provider
+        provider: detection.provider,
+        genlayerRpcUrl: runtime.genlayerRpcUrl,
+        evmRpcUrl: runtime.evmRpcUrl
       });
       const result = await action(adapter, wallet.address);
       setStage(classifyResult(result));

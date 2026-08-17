@@ -36,7 +36,9 @@ export function WorkflowRoomPage() {
     const canonicalWorkflow = await createGenLayerTraceSettleAdapter({
       address: runtime.contractAddress,
       account: wallet.address,
-      provider: wallet.provider
+      provider: wallet.provider,
+      genlayerRpcUrl: runtime.genlayerRpcUrl,
+      evmRpcUrl: runtime.evmRpcUrl
     }).getWorkflow(workflowId);
     if (!canonicalWorkflow) {
       setWorkflow(undefined);
@@ -65,7 +67,9 @@ export function WorkflowRoomPage() {
         createGenLayerTraceSettleAdapter({
           address: contractAddress,
           account: wallet.address,
-          provider: wallet.provider
+          provider: wallet.provider,
+          genlayerRpcUrl: runtime.genlayerRpcUrl,
+          evmRpcUrl: runtime.evmRpcUrl
         }).getWorkflow(workflowId)
       )
       .then((canonicalWorkflow) => {
@@ -89,7 +93,15 @@ export function WorkflowRoomPage() {
     return () => {
       disposed = true;
     };
-  }, [previewWorkflow, runtime.contractAddress, runtime.mode, runtime.reason, workflowId]);
+  }, [
+    previewWorkflow,
+    runtime.contractAddress,
+    runtime.evmRpcUrl,
+    runtime.genlayerRpcUrl,
+    runtime.mode,
+    runtime.reason,
+    workflowId
+  ]);
 
   const feeWeight = Number(newFeeWeight);
   const addStepValid =

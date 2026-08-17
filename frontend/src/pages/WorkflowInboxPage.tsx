@@ -45,7 +45,9 @@ export function WorkflowInboxPage() {
         createGenLayerTraceSettleAdapter({
           address: contractAddress,
           account: wallet.address,
-          provider: wallet.provider
+          provider: wallet.provider,
+          genlayerRpcUrl: runtime.genlayerRpcUrl,
+          evmRpcUrl: runtime.evmRpcUrl
         }).listWorkflows(wallet.address ?? "")
       )
       .then((canonicalWorkflows) => {
@@ -66,7 +68,13 @@ export function WorkflowInboxPage() {
     return () => {
       disposed = true;
     };
-  }, [runtime.contractAddress, runtime.mode, runtime.reason]);
+  }, [
+    runtime.contractAddress,
+    runtime.evmRpcUrl,
+    runtime.genlayerRpcUrl,
+    runtime.mode,
+    runtime.reason
+  ]);
 
   return (
     <section className="page">

@@ -109,12 +109,79 @@ class TraceSettleContract(gl.Contract):
                 return parts[1]
         return ""
 
-    def _classes_cover_steps(self, workflow: WorkflowRecord, classes: str) -> bool:
+    def _step_id_exists(self, workflow: WorkflowRecord, step_id: str) -> bool:
         ids = self._step_ids(workflow)
+        for candidate_id in ids:
+            if candidate_id == step_id:
+                return True
+        return False
+
+    def _valid_step_class(self, step_class: str) -> bool:
+        return (
+            step_class == "SATISFIED"
+            or step_class == "MATERIAL_FAULT"
+            or step_class == "DOWNSTREAM_BLOCKED"
+        )
+
+    def _classes_exactly_cover_steps(self, workflow: WorkflowRecord, classes: str) -> bool:
+        ids = self._step_ids(workflow)
+        expected_count = u256(0)
         for step_id in ids:
-            if self._class_for(classes, step_id) == "":
+            expected_count = expected_count + u256(1)
+            if not self._valid_step_class(self._class_for(classes, step_id)):
                 return False
+        entries = classes.split(";")
+        actual_count = u256(0)
+        for entry in entries:
+            if entry == "":
+                continue
+            parts = entry.split("=")
+            if len(parts) != 2:
+                return False
+            if not self._step_id_exists(workflow, parts[0]):
+                return False
+            if not self._valid_step_class(parts[1]):
+                return False
+            actual_count = actual_count + u256(1)
+        if actual_count != expected_count:
+            return False
         return True
+
+    def _root_contains(self, roots: str, step_id: str) -> bool:
+        if roots == "":
+            return False
+        root_ids = roots.split(",")
+        for root_id in root_ids:
+            if root_id == step_id:
+                return True
+        return False
+
+    def _roots_match_material_faults(
+        self, workflow: WorkflowRecord, classes: str, roots: str
+    ) -> bool:
+        if roots == "":
+            return False
+        ids = self._step_ids(workflow)
+        fault_count = u256(0)
+        for step_id in ids:
+            step_class = self._class_for(classes, step_id)
+            if step_class == "MATERIAL_FAULT":
+                fault_count = fault_count + u256(1)
+                if not self._root_contains(roots, step_id):
+                    return False
+        if fault_count == 0:
+            return False
+        root_ids = roots.split(",")
+        root_count = u256(0)
+        for root_id in root_ids:
+            if root_id == "":
+                return False
+            if not self._step_id_exists(workflow, root_id):
+                return False
+            if self._class_for(classes, root_id) != "MATERIAL_FAULT":
+                return False
+            root_count = root_count + u256(1)
+        return root_count == fault_count
 
     def _is_directly_blocked(self, workflow_id: str, fault_step_id: str, candidate_id: str) -> bool:
         candidate = self.steps[self._step_key(workflow_id, candidate_id)]
@@ -123,6 +190,47 @@ class TraceSettleContract(gl.Contract):
             if dep == fault_step_id:
                 return True
         return False
+
+    def _is_blocked_by_any_root(self, workflow_id: str, candidate_id: str, roots: str) -> bool:
+        root_ids = roots.split(",") if roots != "" else DynArray[str]()
+        for root_id in root_ids:
+            if self._is_directly_blocked(workflow_id, root_id, candidate_id):
+                return True
+        return False
+
+    def _downstream_classes_depend_on_roots(
+        self, workflow_id: str, workflow: WorkflowRecord, classes: str, roots: str
+    ) -> bool:
+        ids = self._step_ids(workflow)
+        for step_id in ids:
+            if self._class_for(classes, step_id) == "DOWNSTREAM_BLOCKED" and not self._is_blocked_by_any_root(
+                workflow_id, step_id, roots
+            ):
+                return False
+        return True
+
+    def _validate_settlement_result(
+        self, workflow_id: str, workflow: WorkflowRecord, verdict: str, coverage: str, classes: str, roots: str
+    ) -> None:
+        if coverage != "COMPLETE":
+            raise gl.vm.UserError("coverage invariant")
+        if not self._classes_exactly_cover_steps(workflow, classes):
+            raise gl.vm.UserError("class invariant")
+        if verdict == "SUCCESS":
+            if roots != "":
+                raise gl.vm.UserError("root invariant")
+            ids = self._step_ids(workflow)
+            for step_id in ids:
+                if self._class_for(classes, step_id) != "SATISFIED":
+                    raise gl.vm.UserError("root invariant")
+            return
+        if verdict == "MATERIAL_FAILURE":
+            if not self._roots_match_material_faults(workflow, classes, roots):
+                raise gl.vm.UserError("root invariant")
+            if not self._downstream_classes_depend_on_roots(workflow_id, workflow, classes, roots):
+                raise gl.vm.UserError("blocked invariant")
+            return
+        raise gl.vm.UserError("invalid verdict")
 
     def _hash_rendered_text(self, text: str) -> str:
         return "sha256:" + hashlib.sha256(text.encode()).hexdigest()
@@ -331,17 +439,11 @@ class TraceSettleContract(gl.Contract):
             return
         classes = result.get("classes", "")
         roots = result.get("roots", "")
-        if not self._classes_cover_steps(workflow, classes):
-            workflow.status = "RETRYABLE"
-            self.workflows[workflow_id] = workflow
-            return
+        coverage = result.get("coverage", "")
+        self._validate_settlement_result(workflow_id, workflow, verdict, coverage, classes, roots)
         if verdict == "SUCCESS":
             self._settle_success(workflow_id, workflow, classes)
         elif verdict == "MATERIAL_FAILURE":
-            if roots == "":
-                workflow.status = "RETRYABLE"
-                self.workflows[workflow_id] = workflow
-                return
             self._settle_material_failure(workflow_id, workflow, classes, roots)
         else:
             raise gl.vm.UserError("invalid verdict")
@@ -379,6 +481,7 @@ class TraceSettleContract(gl.Contract):
         self, workflow_id: str, workflow: WorkflowRecord, classes: str, roots: str
     ) -> None:
         ids = self._step_ids(workflow)
+        paid_fees = bigint(0)
         for step_id in ids:
             key = self._step_key(workflow_id, step_id)
             step = self.steps[key]
@@ -386,14 +489,18 @@ class TraceSettleContract(gl.Contract):
             fee = self._fee(workflow, step)
             if step_class == "SATISFIED" or step_class == "DOWNSTREAM_BLOCKED":
                 self._add_credit(step.provider, step.bond + fee)
+                paid_fees = paid_fees + fee
             elif step_class == "MATERIAL_FAULT":
                 self._add_credit(workflow.sponsor, fee)
+                paid_fees = paid_fees + fee
                 self._distribute_fault_bond(workflow_id, workflow, step_id, step.bond, classes)
             else:
                 raise gl.vm.UserError("invalid class")
             step.bond = bigint(0)
             step.step_class = step_class
             self.steps[key] = step
+        if workflow.pool > paid_fees:
+            self._add_credit(workflow.sponsor, workflow.pool - paid_fees)
         workflow.pool = bigint(0)
         workflow.status = "SETTLED"
         workflow.settled = True

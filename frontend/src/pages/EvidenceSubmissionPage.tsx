@@ -68,7 +68,9 @@ export function EvidenceSubmissionPage() {
         canonicalWorkflow: await createGenLayerTraceSettleAdapter({
           address: contractAddress,
           account: wallet.address,
-          provider: wallet.provider
+          provider: wallet.provider,
+          genlayerRpcUrl: runtime.genlayerRpcUrl,
+          evmRpcUrl: runtime.evmRpcUrl
         }).getWorkflow(workflowId)
       }))
       .then(({ wallet, canonicalWorkflow }) => {
@@ -105,6 +107,8 @@ export function EvidenceSubmissionPage() {
     previewStep,
     previewWorkflow,
     runtime.contractAddress,
+    runtime.evmRpcUrl,
+    runtime.genlayerRpcUrl,
     runtime.mode,
     runtime.reason,
     stepId,
@@ -131,7 +135,9 @@ export function EvidenceSubmissionPage() {
       const canonicalWorkflow = await createGenLayerTraceSettleAdapter({
         address: runtime.contractAddress,
         account: wallet.address,
-        provider: wallet.provider
+        provider: wallet.provider,
+        genlayerRpcUrl: runtime.genlayerRpcUrl,
+        evmRpcUrl: runtime.evmRpcUrl
       }).getWorkflow(workflowId);
       if (!canonicalWorkflow) {
         setReadState("Workflow was not found in canonical contract state.");

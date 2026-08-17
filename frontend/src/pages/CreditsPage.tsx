@@ -50,7 +50,9 @@ export function CreditsPage() {
       const adapter = createGenLayerTraceSettleAdapter({
         address: runtime.contractAddress,
         account: wallet.address,
-        provider: detection.provider
+        provider: detection.provider,
+        genlayerRpcUrl: runtime.genlayerRpcUrl,
+        evmRpcUrl: runtime.evmRpcUrl
       });
       setView(await adapter.getCredits(wallet.address));
       setReadState("Loaded canonical credit from contract view for the connected wallet.");
