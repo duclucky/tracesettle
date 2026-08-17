@@ -1,6 +1,6 @@
 {
   "network": "studionet",
-  "contract_address": "0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313",
+  "contract_address": "0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5",
   "workflow_id": "trace-live-20260812-c",
   "sponsor": "0xC495ef51618D03267A1f227aFe5b27B38c748272",
   "provider": "0x45aD397c438397A702B53a7499a78D08961D39Db",
@@ -16,9 +16,49 @@
   },
   "records": [
     {
+      "label": "create funded workflow",
+      "functionName": "create_workflow",
+      "tx_hash": "0x25b18ea8b7a4ae01c72500b7de9b871ba786299ca4486309863e9de52de4204f",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "2 GEN"
+    },
+    {
+      "label": "add plan step",
+      "functionName": "add_step",
+      "tx_hash": "0x81361e0559c13ab318cee2a8dc1ef4a39fa1527b79022b3403e88a86099ecfcc",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "0 GEN"
+    },
+    {
+      "label": "add build step",
+      "functionName": "add_step",
+      "tx_hash": "0xa68c3b8612b0c65fe5d5c50c2323b60af8a50906c0aba1cc6b245e70b62b10b5",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "0 GEN"
+    },
+    {
+      "label": "activate workflow",
+      "functionName": "activate_workflow",
+      "tx_hash": "0x0f732b46fda722a24ffcfd9829e8d933d44e33a02cd5f9e0cefa1da03ce6cb2d",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "0 GEN"
+    },
+    {
+      "label": "accept step-plan",
+      "functionName": "accept_step",
+      "tx_hash": "0xf32af0b068665c8ae69c2d43d8c6bbaf531bf2ad3d38445ee10e25ea74d88e0d",
+      "status": "FINALIZED",
+      "consensus_result": "MAJORITY_AGREE",
+      "value_gen": "1 GEN"
+    },
+    {
       "label": "accept step-build",
       "functionName": "accept_step",
-      "tx_hash": "0x1a90ac8f88dfba2086c44258ffe7a23d914a7b5851a70b55e94b14130bd4c92b",
+      "tx_hash": "0x6ed5624dfb2ba79b676645691354659078313f39604e7d64f01023833ff618f9",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "1 GEN"
@@ -26,7 +66,7 @@
     {
       "label": "submit evidence step-plan",
       "functionName": "submit_evidence",
-      "tx_hash": "0x031182fd89200c67f67c0f0b8fb921841f8e06965e4d5b1fd5a92b4ff031a479",
+      "tx_hash": "0xfb9793f39feffb4d5c8f46670c0d5d3f04a9ee147850147b9698053902434ebc",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -34,7 +74,7 @@
     {
       "label": "submit evidence step-build",
       "functionName": "submit_evidence",
-      "tx_hash": "0x4abdcbee01562f457a9392027dfb39db00fb0282cd4bc950642013726b8b9817",
+      "tx_hash": "0x9618764d7cce3875741137f7223823e43aa3aced3234c67498e3d338bef5f750",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -42,7 +82,7 @@
     {
       "label": "lock evidence",
       "functionName": "lock_evidence",
-      "tx_hash": "0x56ac52cf00865d5693c12f4ae9323e31abc19405ea9014457d5c3bf428bd3ee6",
+      "tx_hash": "0xdc6d5407a11deb2def099ed5f9a54c239eabdca380f07f539822f423ccc48564",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -50,7 +90,7 @@
     {
       "label": "request review",
       "functionName": "request_review",
-      "tx_hash": "0x98b6f0adc02be2bab4f5ab76234b17294ff4de361cf662434f53882865961e0d",
+      "tx_hash": "0x3bf894e7a55c7f95193bf8a1478298ae1828cc01dbdd53631ac9ca00ce89db43",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -58,7 +98,7 @@
     {
       "label": "withdraw provider credit",
       "functionName": "withdraw_credit",
-      "tx_hash": "0x6bcba3f90caf6441991c136ce23cb42e6b335d0ce6d1cd3c2696585838a9131d",
+      "tx_hash": "0xeb357794e9ed846f1ede7c1edde112ea616b4ed3a8d9b5b2367c54216769f2e3",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -76,7 +116,7 @@
     "consequence_class": "PAY_ALL",
     "coverage": "COMPLETE",
     "finalized": true,
-    "reason": "All steps have been satisfied with complete coverage and no faults or downstream blocking detected.",
+    "reason": "All steps in the TraceSettle workflow are satisfied with no material faults or downstream blocks.",
     "root_cause_steps": "",
     "verdict": "SUCCESS"
   },
@@ -109,6 +149,6 @@
   "provider_credit_before_withdraw_gen": "4 GEN",
   "provider_credit_after_withdraw_gen": "0 GEN",
   "lifecycle_result": "SUCCESS",
-  "captured_at": "2026-08-12T16:22:08.684Z",
+  "captured_at": "2026-08-17T13:22:01.162Z",
   "evidence_limit": "allowlisted lifecycle fields only; full receipts intentionally not stored"
 }

@@ -1,6 +1,6 @@
 # Submission audit
 
-Captured: 2026-08-12
+Captured: 2026-08-17
 
 ## Four-source audit
 
@@ -14,32 +14,32 @@ Captured: 2026-08-12
 2. Current tests/checks:
    - `npm run check`: PASS.
    - `genvm-lint check`: PASS, `TraceSettleContract`, 16 methods.
-   - Direct tests: 11 passed.
+   - Direct tests: 14 passed.
    - Deployment parser tests: 3 passed.
-   - Frontend tests: 54 passed.
+   - Frontend tests: 59 passed.
    - Frontend production build: PASS.
 
 3. Network evidence:
    - Studionet deployment: `docs/evidence/studionet/deployment.json`.
-   - Contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`.
-   - Deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`.
+   - Contract: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`.
+   - Deploy tx: `0xd05369d098c67497776a5beb6500efc3a9f60634c60203ee01593d87de5e2f9f`.
    - Deployment status/result: `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`.
    - Script-signed lifecycle: `trace-live-20260812-c`, `SETTLED`, verdict `SUCCESS`, consequence `PAY_ALL`.
    - Script-signed provider credit: `4 GEN` before withdrawal, `0 GEN` after withdrawal.
-   - Chrome browser-wallet lifecycle: `trace-live-20260812-a`, `SETTLED`, credit after withdrawal `0 GEN`.
+   - Chrome read-only production smoke: contract address, `/genlayer-rpc`, EVM wallet RPC, and zero console errors.
 
 4. README/docs/frontend claims:
    - Public repo URL verified and pushed: https://github.com/duclucky/tracesettle-genlayer.
    - Vercel production URL verified HTTP 200: https://tracesettle-genlayer.vercel.app.
    - Production JS contains the deployed contract address.
-   - Chrome browser-wallet lifecycle evidence is recorded in `docs/evidence/studionet/browser-wallet-lifecycle.json`.
+   - Same-origin `/genlayer-rpc` production POST returned JSON-RPC 200.
 
 ## Objective gate command
 
 Command:
 
 ```powershell
-& 'D:\Genlayer Project\tools\genlayer-grading-bot\genlayer-precheck.ps1' -Project 'D:\Genlayer Project\tracesettle' -Category projects -RepoUrl 'https://github.com/duclucky/tracesettle-genlayer' -ExplorerUrl 'https://explorer-studio.genlayer.com/address/0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313'
+& 'D:\Genlayer Project\tools\genlayer-grading-bot\genlayer-precheck.ps1' -Project 'D:\Genlayer Project\tracesettle' -Category projects -RepoUrl 'https://github.com/duclucky/tracesettle-genlayer' -ExplorerUrl 'https://explorer-studio.genlayer.com/address/0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5'
 ```
 
 Real output excerpt:
@@ -73,3 +73,4 @@ NO BLOCKER - Project tracesettle - Category projects
 - No CI workflow is claimed.
 - No demo video is claimed.
 - No Portal submission confirmation is claimed.
+- Fresh remediated-contract browser-wallet writes are not claimed yet.

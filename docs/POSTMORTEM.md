@@ -7,10 +7,10 @@
 - The frontend was designed with `ui-ux-design-pro`, built in this run, and preserved through later integration.
 - The contract source is ASCII, has the required header, imports `from genlayer import *`, and contains exactly one validator-visible `gl.Contract` subclass.
 - `npm run check` passes contract lint, direct tests, deployment parser tests, frontend tests, and production build.
-- Studionet deployment finalized with `SUCCESS` at `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`.
+- Remediated Studionet deployment finalized with `SUCCESS` at `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`.
 - Script-signed Studionet lifecycle settled workflow `trace-live-20260812-c` with verdict `SUCCESS`, consequence `PAY_ALL`, and provider credit withdrawn to `0 GEN`.
-- Chrome browser-wallet lifecycle settled workflow `trace-live-20260812-a`, used real user-approved wallet transactions, and withdrew browser-read credit to `0 GEN`.
-- Vercel production deployment `dpl_2LiFnyrKUTfBYRL5v6kapSCBY5K1` is live and configured with the deployed contract address.
+- Chrome read-only smoke on production shows the remediated contract address, `/genlayer-rpc`, EVM wallet RPC, and zero console errors.
+- Vercel production deployment `dpl_3TyT3wxgV3UafeC6NXo4atiA5zhk` is live and configured with the remediated contract address.
 
 ## Pending / not claimed
 
@@ -18,6 +18,7 @@
 - Portal submission and Portal acceptance are not claimed.
 - External adoption is not claimed.
 - CI is not claimed.
+- Fresh remediated-contract browser-wallet writes are not claimed until a new user-signed browser lifecycle is run.
 
 ## Lessons
 

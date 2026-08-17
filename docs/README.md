@@ -10,8 +10,8 @@
 - Repository: `https://github.com/duclucky/tracesettle-genlayer`
 - Live app: `https://tracesettle-genlayer.vercel.app`
 - Target network: studionet
-- Active contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
-- Explorer: `https://explorer-studio.genlayer.com/address/0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
+- Active contract: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
+- Explorer: `https://explorer-studio.genlayer.com/address/0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
 - Deployment evidence: `docs/evidence/studionet/deployment.json`
 - Lifecycle evidence: `docs/evidence/studionet/lifecycle.json`
 - Frontend live evidence: `docs/evidence/studionet/frontend-live.json`
@@ -70,7 +70,7 @@ Settle the failed workflow, not the loudest accusation.
 | Differentiation | PASS | Unlike bilateral escrow, access bonds, slot clearing, or successor transfer, TraceSettle classifies a multi-provider dependency graph after artifacts exist. |
 | Claim-to-code | PASS | Every product claim maps to planned writes, views, tests, and evidence in the implementation plan; Phase 4 locks exact method names before contract code. |
 | Full lifecycle | PASS | Planned lifecycle covers create, fund, accept, submit, lock, review, settle or retry, cancel, and withdraw. |
-| Scope honesty | PASS | V1 now claims local tests, Studionet deployment, script-signed lifecycle evidence, Chrome browser-wallet lifecycle evidence, public repo, and Vercel availability; it does not claim legal liability, offchain execution proof, private evidence, external adoption, Portal acceptance, CI, or demo video. |
+| Scope honesty | PASS | V1 now claims local tests, remediated Studionet deployment, script-signed lifecycle evidence, Chrome read-only production smoke, public repo, Vercel availability, and RPC proxy evidence; it does not claim remediated browser-wallet writes, legal liability, offchain execution proof, private evidence, external adoption, Portal acceptance, CI, or demo video. |
 
 ## Actors, roles and incentives
 
@@ -538,8 +538,8 @@ typed adapter boundary.
 Studionet deployment evidence is recorded in
 `docs/evidence/studionet/deployment.json`:
 
-- contract address: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
-- deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`
+- contract address: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
+- deploy tx: `0xd05369d098c67497776a5beb6500efc3a9f60634c60203ee01593d87de5e2f9f`
 - status: `FINALIZED`
 - consensus result: `MAJORITY_AGREE`
 - deployment result: `SUCCESS`
@@ -566,19 +566,20 @@ Production frontend evidence is recorded in
 
 - public repository: `https://github.com/duclucky/tracesettle-genlayer`
 - live app: `https://tracesettle-genlayer.vercel.app`
-- deployment id: `dpl_2LiFnyrKUTfBYRL5v6kapSCBY5K1`
+- deployment id: `dpl_3TyT3wxgV3UafeC6NXo4atiA5zhk`
 - Vercel status: `Ready`
 - HTTP status: `200`
 - production JS contains deployed contract address:
-  `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
+  `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
 
 ## Honest limitations
 
 TraceSettle currently claims approved design, one GenVM contract, direct tests,
 frontend design-system artifacts, local frontend evidence, SDK/wallet/read-path
-integration, Studionet deployment, script-signed Studionet lifecycle evidence,
-Chrome browser-wallet lifecycle evidence, public repo, and Vercel deployment. It
-does not yet claim Portal submission, Portal acceptance, CI, demo video, or
+integration, remediated Studionet deployment, script-signed Studionet lifecycle
+evidence, Chrome read-only production smoke, public repo, Vercel deployment,
+and local/production RPC proxy evidence. It does not yet claim remediated
+browser-wallet writes, Portal submission, Portal acceptance, CI, demo video, or
 external adoption.
 
 ## Kill criteria

@@ -1,8 +1,8 @@
 {
   "public_repository": "https://github.com/duclucky/tracesettle-genlayer",
   "vercel_project": "tracesettle-genlayer",
-  "deployment_id": "dpl_2LiFnyrKUTfBYRL5v6kapSCBY5K1",
-  "deployment_url": "https://tracesettle-genlayer-lgpi031gj-duckys-projects-bc83c6a0.vercel.app",
+  "deployment_id": "dpl_3TyT3wxgV3UafeC6NXo4atiA5zhk",
+  "deployment_url": "https://tracesettle-genlayer-k65e6x1yz-duckys-projects-bc83c6a0.vercel.app",
   "production_url": "https://tracesettle-genlayer.vercel.app",
   "target": "production",
   "status": "Ready",
@@ -15,17 +15,32 @@
   },
   "runtime_config_check": {
     "command": "Fetch production JS assets and search for deployed contract address",
-    "script": "https://tracesettle-genlayer.vercel.app/assets/index-CSFrPp6s.js",
+    "script": "https://tracesettle-genlayer.vercel.app/assets/index-Cdx6uRAp.js",
     "contains_contract_address": true,
-    "contract_address": "0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313"
+    "contract_address": "0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5",
+    "old_contract_address_matches": 0,
+    "genlayer_rpc_proxy_matches": 2
+  },
+  "rpc_proxy_check": {
+    "command": "Invoke-WebRequest -Method Post -Uri 'https://tracesettle-genlayer.vercel.app/genlayer-rpc' -ContentType 'application/json' -Body '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_chainId\",\"params\":[]}' -UseBasicParsing",
+    "status_code": 200,
+    "body_excerpt": "{\"jsonrpc\":\"2.0\",\"result\":\"0xf22f\",\"id\":1}"
   },
   "browser_wallet_lifecycle": {
     "evidence_file": "docs/evidence/studionet/browser-wallet-lifecycle.json",
     "workflow_id": "trace-live-20260812-a",
     "wallet": "0xC495ef51618D03267A1f227aFe5b27B38c748272",
     "final_workflow_status": "SETTLED",
-    "credit_after_withdrawal_gen": "0 GEN"
+    "credit_after_withdrawal_gen": "0 GEN",
+    "scope": "Prior browser-wallet lifecycle on the superseded deployment; not claimed as remediated-contract browser write proof."
   },
-  "captured_at": "2026-08-13T05:30:00+07:00",
-  "honest_limit": "This proves production availability, deployed-address frontend configuration, and a Chrome browser-wallet lifecycle evidence file. It does not claim Portal acceptance, CI, demo video, external adoption, private evidence, or legal arbitration."
+  "chrome_read_only_smoke": {
+    "url": "https://tracesettle-genlayer.vercel.app/settings",
+    "visible_contract_address": true,
+    "visible_genlayer_rpc_proxy": true,
+    "visible_evm_rpc": true,
+    "console_errors": 0
+  },
+  "captured_at": "2026-08-17T20:26:46+07:00",
+  "honest_limit": "This proves production availability, deployed-address frontend configuration, same-origin GenLayer RPC proxy behavior, and Chrome read-only page smoke on the remediated deployment. It does not claim remediated-contract browser-wallet writes, Portal acceptance, CI, demo video, external adoption, private evidence, or legal arbitration."
 }

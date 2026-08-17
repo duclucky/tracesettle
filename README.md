@@ -37,18 +37,22 @@ instead of treating wallet submission as success.
 - Repository: https://github.com/duclucky/tracesettle-genlayer
 - Live app: https://tracesettle-genlayer.vercel.app
 - Network: Studionet
-- Contract: `0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313`
-- Explorer: https://explorer-studio.genlayer.com/address/0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313
-- Deploy tx: `0x0f49064274dbfaf652dfca59fb70769d0261566dcb3788c21cc882d850308f5d`
+- Contract: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
+- Explorer: https://explorer-studio.genlayer.com/address/0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5
+- Deploy tx: `0xd05369d098c67497776a5beb6500efc3a9f60634c60203ee01593d87de5e2f9f`
 - Deployment: `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`
 - Lifecycle workflow: `trace-live-20260812-c`
 - Lifecycle result: `SUCCESS`
 - Final verdict: `SUCCESS`
 - Provider credit: `4 GEN` before withdrawal, `0 GEN` after withdrawal
-- Browser-wallet workflow: `trace-live-20260812-a`
-- Browser-wallet result: `SETTLED`, credit after withdrawal `0 GEN`
-- Current local check: 1 contract, 11 direct tests, 3 deployment parser tests,
-  54 frontend tests, production build passing
+- Browser-wallet workflow: prior evidence on superseded deployment; not claimed
+  as remediated-contract browser write proof.
+- Current local check: 1 contract, 14 direct tests, 3 deployment/config tests,
+  59 frontend tests, production build passing
+- Reviewer remediation: frontend wallet writes now switch/add GenLayer EVM
+  chain `0x107d` with RPC `https://rpc.testnet-chain.genlayer.com`; GenLayer
+  IC reads use same-origin `/genlayer-rpc` proxy to avoid browser CORS on
+  `https://studio.genlayer.com/api`.
 
 See:
 
@@ -56,8 +60,8 @@ See:
 - `docs/evidence/studionet/deployment.json` for allowlisted deployment proof.
 - `docs/evidence/studionet/lifecycle.json` for allowlisted lifecycle proof.
 - `docs/evidence/studionet/frontend-live.json` for public frontend deployment proof.
-- `docs/evidence/studionet/browser-wallet-lifecycle.json` for Chrome
-  browser-wallet lifecycle proof.
+- `docs/evidence/studionet/browser-wallet-lifecycle.json` for prior Chrome
+  browser-wallet lifecycle proof on the superseded deployment.
 - `docs/SUBMISSION.md` for copy-ready Builders submission text.
 
 ## Product surface
@@ -97,8 +101,15 @@ npm run check
 
 ## Frontend configuration
 
-The frontend reads `VITE_CONTRACT_ADDRESS`. Local development can copy
-`frontend/.env.example` to `frontend/.env`.
+The frontend reads:
+
+- `VITE_CONTRACT_ADDRESS`
+- `VITE_GENLAYER_RPC_URL` (default `/genlayer-rpc`)
+- `VITE_EVM_RPC_URL` (default `https://rpc.testnet-chain.genlayer.com`)
+
+Local development can copy `frontend/.env.example` to `frontend/.env`. Vite
+proxies `/genlayer-rpc` to `https://studio.genlayer.com/api`; production Vercel
+does the same via `frontend/vercel.json`.
 
 Only public `VITE_*` values belong in frontend env files. Private keys must stay
 in ignored project or parent `.env` files for deployment/lifecycle scripts.
@@ -119,11 +130,12 @@ authorized parent workspace `.env`, and never print private key values.
 
 ## Honest limits
 
-This repository proves local checks, Studionet deployment, script-signed
-Studionet lifecycle evidence, Chrome browser-wallet lifecycle evidence, public
-repository availability, and production frontend availability. It does not
-claim legal arbitration, private evidence support, offchain execution proof,
-Portal acceptance, CI, demo video, or external adoption.
+This repository proves local checks, remediated Studionet deployment,
+script-signed Studionet lifecycle evidence, public repository availability,
+production frontend availability, same-origin RPC proxy behavior, and Chrome
+read-only smoke on the remediated deployment. It does not claim remediated
+browser-wallet writes, legal arbitration, private evidence support, offchain
+execution proof, Portal acceptance, CI, demo video, or external adoption.
 
 ## Copy-ready submission
 
@@ -133,7 +145,7 @@ Portal acceptance, CI, demo video, or external adoption.
 
 **Description:**
 
-TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider AI workflows. A sponsor funds 2 GEN, providers post 1 GEN bonds and submit public artifact evidence. The Intelligent Contract fetches locked evidence, recomputes digests, asks validators to classify step satisfaction/root cause/coverage, and deterministically opens GEN credits/refunds/withdrawals. Verified: one TraceSettleContract, 11 direct tests, 3 deployment parser tests, 54 frontend tests, npm run check passing, contract deployment SUCCESS on Studionet, script-signed lifecycle settled SUCCESS and withdrew provider credit to 0 GEN, Chrome browser-wallet lifecycle settled SUCCESS and withdrew credit to 0 GEN, public GitHub repo, and Vercel production app. Limitations: demo video, CI, Portal acceptance, external adoption, private evidence, and legal arbitration are not claimed.
+TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider AI workflows. A sponsor funds 2 GEN, providers post 1 GEN bonds and submit public artifact evidence. The Intelligent Contract fetches locked evidence, recomputes digests, enforces coverage/root/class invariants before any settlement credit, asks validators to classify satisfaction/root cause/coverage, and opens deterministic GEN credits/refunds/withdrawals. Verified: one TraceSettleContract, 14 direct tests, 3 deployment/config tests, 59 frontend tests, npm run check passing, remediated contract deployment SUCCESS on Studionet, script-signed lifecycle settled SUCCESS and withdrew provider credit to 0 GEN, EVM wallet RPC + same-origin GenLayer RPC proxy configured and production-verified, public GitHub repo, and Vercel production app. Limitations: remediated browser-wallet writes, demo video, CI, Portal acceptance, external adoption, private evidence, and legal arbitration are not claimed.
 
 **Short report:**
 
@@ -142,5 +154,5 @@ Project name: TraceSettle
 Description: TraceSettle settles multi-provider workflow failures with validator judgment and GEN consequences that a normal database cannot neutrally enforce.
 GitHub (public): https://github.com/duclucky/tracesettle-genlayer
 Live app: https://tracesettle-genlayer.vercel.app
-Contract (studionet): 0xd2224146ccFbe1BD700d36F53B0ff1b7B4Fe5313
+Contract (studionet): 0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5
 ```
