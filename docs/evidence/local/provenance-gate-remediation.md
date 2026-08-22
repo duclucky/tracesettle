@@ -58,7 +58,7 @@ Contract: TraceSettleContract
 Methods: 16 (6 view, 10 write)
 
 check:tests
-19 passed in 0.12s
+20 passed in 0.07s
 
 check:deployment
 tests 3

@@ -1,6 +1,6 @@
 # Submission audit
 
-Captured: 2026-08-17
+Captured: 2026-08-22
 
 ## Four-source audit
 
@@ -9,24 +9,24 @@ Captured: 2026-08-17
    - ASCII source with correct `Depends` header.
    - Uses `gl.vm.run_nondet` with a custom validator that compares consensus-critical meaning.
    - Recomputes stored evidence digests from fetched rendered text before consequence.
+   - Treats artifact text as untrusted provider-controlled input and verifies a provenance envelope before settlement.
    - Value entrypoints are GEN-denominated in user-facing docs and base-unit exact internally.
 
 2. Current tests/checks:
    - `npm run check`: PASS.
    - `genvm-lint check`: PASS, `TraceSettleContract`, 16 methods.
-   - Direct tests: 14 passed.
+   - Direct tests: 20 passed.
    - Deployment parser tests: 3 passed.
    - Frontend tests: 59 passed.
    - Frontend production build: PASS.
 
 3. Network evidence:
    - Studionet deployment: `docs/evidence/studionet/deployment.json`.
-   - Contract: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`.
-   - Deploy tx: `0xd05369d098c67497776a5beb6500efc3a9f60634c60203ee01593d87de5e2f9f`.
+   - Contract: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`.
+   - Deploy tx: `0x2bc648336ab57893084de09c07631c4cf73f68bb2cebf4a3cd7139af83e0f086`.
    - Deployment status/result: `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`.
-   - Script-signed lifecycle: `trace-live-20260812-c`, `SETTLED`, verdict `SUCCESS`, consequence `PAY_ALL`.
+   - Script-signed lifecycle: `trace-live-20260822-a`, `SETTLED`, verdict `SUCCESS`, consequence `PAY_ALL`.
    - Script-signed provider credit: `4 GEN` before withdrawal, `0 GEN` after withdrawal.
-   - Chrome read-only production smoke: contract address, `/genlayer-rpc`, EVM wallet RPC, and zero console errors.
 
 4. README/docs/frontend claims:
    - Public repo URL verified and pushed: https://github.com/duclucky/tracesettle-genlayer.
@@ -39,7 +39,7 @@ Captured: 2026-08-17
 Command:
 
 ```powershell
-& 'D:\Genlayer Project\tools\genlayer-grading-bot\genlayer-precheck.ps1' -Project 'D:\Genlayer Project\tracesettle' -Category projects -RepoUrl 'https://github.com/duclucky/tracesettle-genlayer' -ExplorerUrl 'https://explorer-studio.genlayer.com/address/0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5'
+& 'D:\Genlayer Project\tools\genlayer-grading-bot\genlayer-precheck.ps1' -Project 'D:\Genlayer Project\tracesettle' -Category projects -RepoUrl 'https://github.com/duclucky/tracesettle-genlayer' -ExplorerUrl 'https://explorer-studio.genlayer.com/address/0xC9C9b344E292AC9fc3204165A992f05E2BB00186'
 ```
 
 Real output excerpt:

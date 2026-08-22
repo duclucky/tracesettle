@@ -246,14 +246,14 @@ class TraceSettleContract(gl.Contract):
         return False
 
     def _artifact_provenance_valid(
-        self, workflow_id: str, workflow: WorkflowRecord, step_id: str, step: StepRecord, text: str
+        self, workflow_id: str, step_id: str, provider: str, objective_hash: str, text: str
     ) -> bool:
         return (
             self._line_present(text, "TRACESETTLE_ATTESTATION")
             and self._line_present(text, "workflow_id=" + workflow_id)
             and self._line_present(text, "step_id=" + step_id)
-            and self._line_present(text, "provider=" + str(step.provider))
-            and self._line_present(text, "objective_hash=" + self._objective_hash(workflow.objective))
+            and self._line_present(text, "provider=" + provider)
+            and self._line_present(text, "objective_hash=" + objective_hash)
         )
 
     @gl.public.write.payable
@@ -382,8 +382,10 @@ class TraceSettleContract(gl.Contract):
         step_ids = self._step_ids(workflow)
         evidence_pack = "WORKFLOW_ID " + workflow_id + "\nWORKFLOW_OBJECTIVE " + workflow.objective
         fetch_plan = ""
+        objective_hash = self._objective_hash(workflow.objective)
         for step_id in step_ids:
             step = self.steps[self._step_key(workflow_id, step_id)]
+            provider = str(step.provider)
             evidence_pack = (
                 evidence_pack
                 + "\nSTEP "
@@ -393,13 +395,25 @@ class TraceSettleContract(gl.Contract):
                 + "\nDEPENDENCIES "
                 + step.dependencies
                 + "\nPROVIDER "
-                + str(step.provider)
+                + provider
                 + "\nURL "
                 + step.evidence_url
                 + "\nDIGEST "
                 + step.digest
             )
-            fetch_plan = fetch_plan + step_id + "\t" + step.evidence_url + "\t" + step.digest + "\n"
+            fetch_plan = (
+                fetch_plan
+                + step_id
+                + "\t"
+                + step.evidence_url
+                + "\t"
+                + step.digest
+                + "\t"
+                + provider
+                + "\t"
+                + objective_hash
+                + "\n"
+            )
 
         def leader_fn():
             rendered = ""
@@ -408,7 +422,7 @@ class TraceSettleContract(gl.Contract):
                 if row == "":
                     continue
                 parts = row.split("\t")
-                if len(parts) != 3:
+                if len(parts) != 5:
                     return {
                         "verdict": "UNVERIFIABLE",
                         "coverage": "INCOMPLETE",
@@ -419,6 +433,8 @@ class TraceSettleContract(gl.Contract):
                 step_id = parts[0]
                 url = parts[1]
                 digest = parts[2]
+                provider = parts[3]
+                objective_hash = parts[4]
                 page = gl.nondet.web.render(url, mode="text")
                 computed = "sha256:" + hashlib.sha256(page.encode()).hexdigest()
                 if computed != digest:
@@ -429,8 +445,7 @@ class TraceSettleContract(gl.Contract):
                         "roots": "",
                         "reason": "digest mismatch",
                     }
-                step = self.steps[self._step_key(workflow_id, step_id)]
-                if not self._artifact_provenance_valid(workflow_id, workflow, step_id, step, page):
+                if not self._artifact_provenance_valid(workflow_id, step_id, provider, objective_hash, page):
                     return {
                         "verdict": "UNVERIFIABLE",
                         "coverage": "INCOMPLETE",

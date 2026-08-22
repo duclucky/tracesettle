@@ -13,7 +13,7 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 ## Evidence
 
 - Repository: https://github.com/duclucky/tracesettle-genlayer
-- Primary contract explorer: https://explorer-studio.genlayer.com/address/0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5
+- Primary contract explorer: https://explorer-studio.genlayer.com/address/0xC9C9b344E292AC9fc3204165A992f05E2BB00186
 - Consumer/integration explorer: N/A; no separate consumer contract exists.
 - Lifecycle evidence: `docs/evidence/studionet/lifecycle.json`
 - Deployment evidence: `docs/evidence/studionet/deployment.json`
@@ -26,13 +26,13 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 
 - Contracts: 1 (`TraceSettleContract`)
 - Contract methods: 16 (6 view, 10 write)
-- Direct tests: 19 passed
+- Direct tests: 20 passed
 - Deployment/config tests: 3 passed
 - Frontend tests: 59 passed
 - Network: Studionet
-- Deployed contract: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
-- Deploy tx: `0xd05369d098c67497776a5beb6500efc3a9f60634c60203ee01593d87de5e2f9f`
-- Lifecycle workflow: `trace-live-20260812-c`
+- Deployed contract: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
+- Deploy tx: `0x2bc648336ab57893084de09c07631c4cf73f68bb2cebf4a3cd7139af83e0f086`
+- Lifecycle workflow: `trace-live-20260822-a`
 - Lifecycle result: `SUCCESS`
 - Final workflow status: `SETTLED`
 - Final verdict: `SUCCESS`
@@ -40,14 +40,13 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 - Provider credit before withdrawal: `4 GEN`
 - Provider credit after withdrawal: `0 GEN`
 - Browser-wallet workflow: prior deployment only; not claimed as remediated-contract proof.
-- Provenance-gate contract change: locally verified, not yet redeployed to Studionet.
+- Provenance-gate contract change: deployed on Studionet and verified through script-signed lifecycle.
 - Local RPC remediation: `http://127.0.0.1:5173/genlayer-rpc` returned status 200 and `{"jsonrpc":"2.0","result":"0xf22f","id":1}`.
 - Production RPC remediation: `https://tracesettle-genlayer.vercel.app/genlayer-rpc` returned status 200 and `{"jsonrpc":"2.0","result":"0xf22f","id":1}`.
 
 ## Honest limitations / pending
 
 - Remediated browser-wallet writes are pending a fresh user-signed browser lifecycle.
-- Fresh provenance-gate Studionet deployment and lifecycle are pending.
 - Demo video is pending.
 - Portal submission and Portal acceptance are not claimed.
 - External adoption is not claimed.
@@ -67,4 +66,4 @@ TraceSettle is a Projects submission because the contribution is a wallet-enable
 
 **Live app:** https://tracesettle-genlayer.vercel.app
 
-**Contract (studionet):** 0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5
+**Contract (studionet):** 0xC9C9b344E292AC9fc3204165A992f05E2BB00186

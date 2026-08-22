@@ -81,3 +81,11 @@ def test_review_path_verifies_artifact_provenance_before_settlement_prompt():
     assert "TRACESETTLE_ATTESTATION" in text
     assert "_artifact_provenance_valid" in text
     assert "_objective_hash" in text
+
+
+def test_nondet_leader_does_not_read_contract_storage():
+    text = source()
+    leader_start = text.index("        def leader_fn():")
+    validator_start = text.index("        def validator_fn", leader_start)
+    leader_body = text[leader_start:validator_start]
+    assert "self.steps" not in leader_body

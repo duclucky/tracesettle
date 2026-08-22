@@ -10,8 +10,8 @@
 - Repository: `https://github.com/duclucky/tracesettle-genlayer`
 - Live app: `https://tracesettle-genlayer.vercel.app`
 - Target network: studionet
-- Active contract: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
-- Explorer: `https://explorer-studio.genlayer.com/address/0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
+- Active contract: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
+- Explorer: `https://explorer-studio.genlayer.com/address/0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
 - Deployment evidence: `docs/evidence/studionet/deployment.json`
 - Lifecycle evidence: `docs/evidence/studionet/lifecycle.json`
 - Frontend live evidence: `docs/evidence/studionet/frontend-live.json`
@@ -70,7 +70,7 @@ Settle the failed workflow, not the loudest accusation.
 | Differentiation | PASS | Unlike bilateral escrow, access bonds, slot clearing, or successor transfer, TraceSettle classifies a multi-provider dependency graph after artifacts exist. |
 | Claim-to-code | PASS | Every product claim maps to planned writes, views, tests, and evidence in the implementation plan; Phase 4 locks exact method names before contract code. |
 | Full lifecycle | PASS | Planned lifecycle covers create, fund, accept, submit, lock, review, settle or retry, cancel, and withdraw. |
-| Scope honesty | PASS | V1 now claims local tests, earlier remediated Studionet deployment, script-signed lifecycle evidence for that deployed revision, Chrome read-only production smoke, public repo, Vercel availability, and RPC proxy evidence. The new provenance-gate source revision is locally verified but not yet redeployed; it does not claim fresh provenance-gate Studionet lifecycle, remediated browser-wallet writes, legal liability, offchain execution proof, private evidence, external adoption, Portal acceptance, CI, or demo video. |
+| Scope honesty | PASS | V1 now claims local tests, provenance-gate Studionet deployment, script-signed lifecycle evidence for that deployed revision, public repo, Vercel availability, and RPC proxy evidence. It does not claim fresh remediated browser-wallet writes, legal liability, offchain execution proof, private evidence, external adoption, Portal acceptance, CI, or demo video. |
 
 ## Actors, roles and incentives
 
@@ -504,7 +504,7 @@ change value destinations or legal actions.
 | --- | --- | --- | --- | --- |
 | Sponsor funds a bounded workflow with 2 GEN | `create_workflow`, DRAFT | `get_workflow` | wrong value, duplicate ID, stored pool | Studionet create tx and read |
 | Providers post 1 GEN bonds | `accept_step`, OPEN | `get_step` | wrong caller, wrong value, duplicate accept | Studionet accept tx and read |
-| Evidence is bound to provider, objective, and digest | `submit_evidence`, `request_review` | `get_step`, `get_attempt` | wrong provider, digest mismatch, missing provenance, wrong objective hash | Local direct tests; fresh Studionet evidence pending for provenance gate |
+| Evidence is bound to provider, objective, and digest | `submit_evidence`, `request_review` | `get_step`, `get_attempt` | wrong provider, digest mismatch, missing provenance, wrong objective hash | Studionet provenance-gate lifecycle |
 | Validators classify step satisfaction and root cause | `request_review`, `retry_review` | `get_attempt` | malicious leader, semantic mismatch, prompt injection | Studionet review tx and attempt read |
 | Unverifiable evidence is non-penalizing | `request_review`, RETRYABLE | `get_workflow`, `get_credit` | source outage, digest mismatch, zero credit movement | Studionet retryable lifecycle |
 | Settlement opens deterministic credits | settlement branch in review | `get_credit` | success, material failure, accounting invariant | Studionet settled lifecycle |
@@ -550,8 +550,8 @@ typed adapter boundary.
 Studionet deployment evidence is recorded in
 `docs/evidence/studionet/deployment.json`:
 
-- contract address: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
-- deploy tx: `0xd05369d098c67497776a5beb6500efc3a9f60634c60203ee01593d87de5e2f9f`
+- contract address: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
+- deploy tx: `0x2bc648336ab57893084de09c07631c4cf73f68bb2cebf4a3cd7139af83e0f086`
 - status: `FINALIZED`
 - consensus result: `MAJORITY_AGREE`
 - deployment result: `SUCCESS`
@@ -560,7 +560,7 @@ Studionet deployment evidence is recorded in
 Studionet lifecycle evidence is recorded in
 `docs/evidence/studionet/lifecycle.json`:
 
-- workflow: `trace-live-20260812-c`
+- workflow: `trace-live-20260822-a`
 - final workflow status: `SETTLED`
 - final verdict: `SUCCESS`
 - consequence class: `PAY_ALL`
@@ -582,19 +582,17 @@ Production frontend evidence is recorded in
 - Vercel status: `Ready`
 - HTTP status: `200`
 - production JS contains deployed contract address:
-  `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
+  `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
 
 ## Honest limitations
 
 TraceSettle currently claims approved design, one GenVM contract, direct tests,
 frontend design-system artifacts, local frontend evidence, SDK/wallet/read-path
-integration, earlier remediated Studionet deployment, script-signed Studionet
-lifecycle evidence for that deployed revision, Chrome read-only production smoke,
-public repo, Vercel deployment, and local/production RPC proxy evidence. The
-new provenance-gate source revision is locally verified but not yet redeployed.
-It does not yet claim fresh provenance-gate Studionet lifecycle evidence,
-remediated browser-wallet writes, Portal submission, Portal acceptance, CI, demo
-video, or external adoption.
+integration, provenance-gate Studionet deployment, script-signed Studionet
+lifecycle evidence for that deployed revision, public repo, Vercel deployment,
+and local/production RPC proxy evidence. It does not yet claim fresh remediated
+browser-wallet writes, Portal submission, Portal acceptance, CI, demo video, or
+external adoption.
 
 ## Kill criteria
 

@@ -43,21 +43,20 @@ instead of treating wallet submission as success.
 - Repository: https://github.com/duclucky/tracesettle-genlayer
 - Live app: https://tracesettle-genlayer.vercel.app
 - Network: Studionet
-- Contract: `0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5`
-- Explorer: https://explorer-studio.genlayer.com/address/0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5
-- Deploy tx: `0xd05369d098c67497776a5beb6500efc3a9f60634c60203ee01593d87de5e2f9f`
+- Contract: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
+- Explorer: https://explorer-studio.genlayer.com/address/0xC9C9b344E292AC9fc3204165A992f05E2BB00186
+- Deploy tx: `0x2bc648336ab57893084de09c07631c4cf73f68bb2cebf4a3cd7139af83e0f086`
 - Deployment: `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`
-- Lifecycle workflow: `trace-live-20260812-c`
+- Lifecycle workflow: `trace-live-20260822-a`
 - Lifecycle result: `SUCCESS`
 - Final verdict: `SUCCESS`
 - Provider credit: `4 GEN` before withdrawal, `0 GEN` after withdrawal
 - Browser-wallet workflow: prior evidence on superseded deployment; not claimed
   as remediated-contract browser write proof.
-- Current local check: 1 contract, 19 direct tests, 3 deployment/config tests,
+- Current local check: 1 contract, 20 direct tests, 3 deployment/config tests,
   59 frontend tests, production build passing
-- Provenance remediation: local contract source now rejects missing or mismatched
-  artifact provenance before settlement. This source change needs a fresh
-  Studionet deployment before it can be claimed as network evidence.
+- Provenance remediation: deployed contract rejects missing or mismatched
+  artifact provenance before settlement.
 - Reviewer remediation: frontend wallet writes now switch/add GenLayer EVM
   chain `0x107d` with RPC `https://rpc.testnet-chain.genlayer.com`; GenLayer
   IC reads use same-origin `/genlayer-rpc` proxy to avoid browser CORS on
@@ -139,12 +138,10 @@ authorized parent workspace `.env`, and never print private key values.
 
 ## Honest limits
 
-This repository proves local checks, the earlier remediated Studionet deployment,
+This repository proves local checks, provenance-gate Studionet deployment,
 script-signed Studionet lifecycle evidence for that deployed revision, public
-repository availability, production frontend availability, same-origin RPC proxy
-behavior, and Chrome read-only smoke. The new provenance-gate contract change is
-locally verified but not yet redeployed. It does not claim fresh provenance-gate
-Studionet lifecycle evidence, remediated browser-wallet writes, legal
+repository availability, production frontend availability, and same-origin RPC
+proxy behavior. It does not claim fresh remediated browser-wallet writes, legal
 arbitration, private evidence support, offchain execution proof, Portal
 acceptance, CI, demo video, or external adoption.
 
@@ -165,5 +162,5 @@ Project name: TraceSettle
 Description: TraceSettle settles multi-provider workflow failures with validator judgment and GEN consequences that a normal database cannot neutrally enforce.
 GitHub (public): https://github.com/duclucky/tracesettle-genlayer
 Live app: https://tracesettle-genlayer.vercel.app
-Contract (studionet): 0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5
+Contract (studionet): 0xC9C9b344E292AC9fc3204165A992f05E2BB00186
 ```

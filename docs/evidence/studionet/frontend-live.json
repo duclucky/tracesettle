@@ -1,8 +1,8 @@
 {
   "public_repository": "https://github.com/duclucky/tracesettle-genlayer",
   "vercel_project": "tracesettle-genlayer",
-  "deployment_id": "dpl_3TyT3wxgV3UafeC6NXo4atiA5zhk",
-  "deployment_url": "https://tracesettle-genlayer-k65e6x1yz-duckys-projects-bc83c6a0.vercel.app",
+  "deployment_id": "dpl_EJmZrMo1XNzxDJDdH4QGVMQTxM53",
+  "deployment_url": "https://tracesettle-genlayer-dt45grj1r-duckys-projects-bc83c6a0.vercel.app",
   "production_url": "https://tracesettle-genlayer.vercel.app",
   "target": "production",
   "status": "Ready",
@@ -15,9 +15,9 @@
   },
   "runtime_config_check": {
     "command": "Fetch production JS assets and search for deployed contract address",
-    "script": "https://tracesettle-genlayer.vercel.app/assets/index-Cdx6uRAp.js",
+    "script": "https://tracesettle-genlayer.vercel.app/assets/index-s27XhgPz.js",
     "contains_contract_address": true,
-    "contract_address": "0xF6BcD69787aeef9a4a033Fa951068eFbAA8fBDe5",
+    "contract_address": "0xC9C9b344E292AC9fc3204165A992f05E2BB00186",
     "old_contract_address_matches": 0,
     "genlayer_rpc_proxy_matches": 2
   },
@@ -35,12 +35,8 @@
     "scope": "Prior browser-wallet lifecycle on the superseded deployment; not claimed as remediated-contract browser write proof."
   },
   "chrome_read_only_smoke": {
-    "url": "https://tracesettle-genlayer.vercel.app/settings",
-    "visible_contract_address": true,
-    "visible_genlayer_rpc_proxy": true,
-    "visible_evm_rpc": true,
-    "console_errors": 0
+    "scope": "Not refreshed for the provenance-gate deployment; fresh Chrome/browser-wallet proof is not claimed."
   },
-  "captured_at": "2026-08-17T20:26:46+07:00",
-  "honest_limit": "This proves production availability, deployed-address frontend configuration, same-origin GenLayer RPC proxy behavior, and Chrome read-only page smoke on the remediated deployment. It does not claim remediated-contract browser-wallet writes, Portal acceptance, CI, demo video, external adoption, private evidence, or legal arbitration."
+  "captured_at": "2026-08-22T13:30:00+07:00",
+  "honest_limit": "This proves production availability, deployed-address frontend configuration for the provenance-gate contract, and same-origin GenLayer RPC proxy behavior. It does not claim fresh remediated-contract browser-wallet writes, Portal acceptance, CI, demo video, external adoption, private evidence, or legal arbitration."
 }
