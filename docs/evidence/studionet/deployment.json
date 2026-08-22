@@ -1,17 +1,17 @@
 {
   "network": "studionet",
-  "commit": "106fb2145d71ee1401ff7dec9297ddc3137def4c",
+  "commit": "4c0925a641bdf3e9f91f62931dda6440bc6817aa",
   "deployer": "0xC495ef51618D03267A1f227aFe5b27B38c748272",
   "contract": {
     "path": "contracts/tracesettle.py",
-    "source_sha256": "accab96c4309a0b34faa88afb01c609f7312b0b3344114dad6cc971a0f221819",
+    "source_sha256": "4c8d05fe91918eabc4580073226b61d6bc91b83e6d56f193c6bc93a48161d66d",
     "depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6"
   },
-  "tx_hash": "0x2bc648336ab57893084de09c07631c4cf73f68bb2cebf4a3cd7139af83e0f086",
+  "tx_hash": "0x4bfd7a61a876859ea562eaa7f939bd300d054571c0e1ff0b799527cb8a627b38",
   "status": "FINALIZED",
   "consensus_result": "MAJORITY_AGREE",
   "deployment_result": "SUCCESS",
-  "contract_address": "0xC9C9b344E292AC9fc3204165A992f05E2BB00186",
+  "contract_address": "0xC125348c60768552Aa51D9E8d00a59e326958a17",
   "schema_verified": true,
   "method_count": 16,
   "methods": [
@@ -32,6 +32,6 @@
     "submit_evidence",
     "withdraw_credit"
   ],
-  "captured_at": "2026-08-22T06:18:46.884Z",
+  "captured_at": "2026-08-22T06:33:59.880Z",
   "evidence_limit": "allowlisted deployment identity only; full receipt intentionally not stored"
 }

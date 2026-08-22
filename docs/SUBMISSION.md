@@ -13,7 +13,7 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 ## Evidence
 
 - Repository: https://github.com/duclucky/tracesettle-genlayer
-- Primary contract explorer: https://explorer-studio.genlayer.com/address/0xC9C9b344E292AC9fc3204165A992f05E2BB00186
+- Primary contract explorer: https://explorer-studio.genlayer.com/address/0xC125348c60768552Aa51D9E8d00a59e326958a17
 - Consumer/integration explorer: N/A; no separate consumer contract exists.
 - Lifecycle evidence: `docs/evidence/studionet/lifecycle.json`
 - Deployment evidence: `docs/evidence/studionet/deployment.json`
@@ -30,8 +30,8 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 - Deployment/config tests: 3 passed
 - Frontend tests: 59 passed
 - Network: Studionet
-- Deployed contract: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
-- Deploy tx: `0x2bc648336ab57893084de09c07631c4cf73f68bb2cebf4a3cd7139af83e0f086`
+- Deployed contract: `0xC125348c60768552Aa51D9E8d00a59e326958a17`
+- Deploy tx: `0x4bfd7a61a876859ea562eaa7f939bd300d054571c0e1ff0b799527cb8a627b38`
 - Lifecycle workflow: `trace-live-20260822-a`
 - Lifecycle result: `SUCCESS`
 - Final workflow status: `SETTLED`
@@ -66,4 +66,4 @@ TraceSettle is a Projects submission because the contribution is a wallet-enable
 
 **Live app:** https://tracesettle-genlayer.vercel.app
 
-**Contract (studionet):** 0xC9C9b344E292AC9fc3204165A992f05E2BB00186
+**Contract (studionet):** 0xC125348c60768552Aa51D9E8d00a59e326958a17

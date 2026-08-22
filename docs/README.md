@@ -10,8 +10,8 @@
 - Repository: `https://github.com/duclucky/tracesettle-genlayer`
 - Live app: `https://tracesettle-genlayer.vercel.app`
 - Target network: studionet
-- Active contract: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
-- Explorer: `https://explorer-studio.genlayer.com/address/0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
+- Active contract: `0xC125348c60768552Aa51D9E8d00a59e326958a17`
+- Explorer: `https://explorer-studio.genlayer.com/address/0xC125348c60768552Aa51D9E8d00a59e326958a17`
 - Deployment evidence: `docs/evidence/studionet/deployment.json`
 - Lifecycle evidence: `docs/evidence/studionet/lifecycle.json`
 - Frontend live evidence: `docs/evidence/studionet/frontend-live.json`
@@ -550,8 +550,8 @@ typed adapter boundary.
 Studionet deployment evidence is recorded in
 `docs/evidence/studionet/deployment.json`:
 
-- contract address: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
-- deploy tx: `0x2bc648336ab57893084de09c07631c4cf73f68bb2cebf4a3cd7139af83e0f086`
+- contract address: `0xC125348c60768552Aa51D9E8d00a59e326958a17`
+- deploy tx: `0x4bfd7a61a876859ea562eaa7f939bd300d054571c0e1ff0b799527cb8a627b38`
 - status: `FINALIZED`
 - consensus result: `MAJORITY_AGREE`
 - deployment result: `SUCCESS`
@@ -582,7 +582,7 @@ Production frontend evidence is recorded in
 - Vercel status: `Ready`
 - HTTP status: `200`
 - production JS contains deployed contract address:
-  `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
+  `0xC125348c60768552Aa51D9E8d00a59e326958a17`
 
 ## Honest limitations
 

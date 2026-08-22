@@ -43,9 +43,9 @@ instead of treating wallet submission as success.
 - Repository: https://github.com/duclucky/tracesettle-genlayer
 - Live app: https://tracesettle-genlayer.vercel.app
 - Network: Studionet
-- Contract: `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`
-- Explorer: https://explorer-studio.genlayer.com/address/0xC9C9b344E292AC9fc3204165A992f05E2BB00186
-- Deploy tx: `0x2bc648336ab57893084de09c07631c4cf73f68bb2cebf4a3cd7139af83e0f086`
+- Contract: `0xC125348c60768552Aa51D9E8d00a59e326958a17`
+- Explorer: https://explorer-studio.genlayer.com/address/0xC125348c60768552Aa51D9E8d00a59e326958a17
+- Deploy tx: `0x4bfd7a61a876859ea562eaa7f939bd300d054571c0e1ff0b799527cb8a627b38`
 - Deployment: `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`
 - Lifecycle workflow: `trace-live-20260822-a`
 - Lifecycle result: `SUCCESS`
@@ -162,5 +162,5 @@ Project name: TraceSettle
 Description: TraceSettle settles multi-provider workflow failures with validator judgment and GEN consequences that a normal database cannot neutrally enforce.
 GitHub (public): https://github.com/duclucky/tracesettle-genlayer
 Live app: https://tracesettle-genlayer.vercel.app
-Contract (studionet): 0xC9C9b344E292AC9fc3204165A992f05E2BB00186
+Contract (studionet): 0xC125348c60768552Aa51D9E8d00a59e326958a17
 ```

@@ -1,8 +1,8 @@
 {
   "public_repository": "https://github.com/duclucky/tracesettle-genlayer",
   "vercel_project": "tracesettle-genlayer",
-  "deployment_id": "dpl_EJmZrMo1XNzxDJDdH4QGVMQTxM53",
-  "deployment_url": "https://tracesettle-genlayer-dt45grj1r-duckys-projects-bc83c6a0.vercel.app",
+  "deployment_id": "dpl_E9zFBRNPdUPX98LnNqAif4ByYUm9",
+  "deployment_url": "https://tracesettle-genlayer-7l8d5e2cv-duckys-projects-bc83c6a0.vercel.app",
   "production_url": "https://tracesettle-genlayer.vercel.app",
   "target": "production",
   "status": "Ready",
@@ -15,9 +15,9 @@
   },
   "runtime_config_check": {
     "command": "Fetch production JS assets and search for deployed contract address",
-    "script": "https://tracesettle-genlayer.vercel.app/assets/index-s27XhgPz.js",
+    "script": "https://tracesettle-genlayer.vercel.app/assets/index-CQk2uYyP.js",
     "contains_contract_address": true,
-    "contract_address": "0xC9C9b344E292AC9fc3204165A992f05E2BB00186",
+    "contract_address": "0xC125348c60768552Aa51D9E8d00a59e326958a17",
     "old_contract_address_matches": 0,
     "genlayer_rpc_proxy_matches": 2
   },

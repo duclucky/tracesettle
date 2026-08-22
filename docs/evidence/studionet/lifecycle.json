@@ -1,16 +1,16 @@
 {
   "network": "studionet",
-  "contract_address": "0xC9C9b344E292AC9fc3204165A992f05E2BB00186",
+  "contract_address": "0xC125348c60768552Aa51D9E8d00a59e326958a17",
   "workflow_id": "trace-live-20260822-a",
   "sponsor": "0xC495ef51618D03267A1f227aFe5b27B38c748272",
   "provider": "0x45aD397c438397A702B53a7499a78D08961D39Db",
   "evidence": {
     "step-plan": {
-      "url": "https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/106fb2145d71ee1401ff7dec9297ddc3137def4c/docs/evidence/studionet/artifacts/provenance-step-plan.txt",
+      "url": "https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/4c0925a641bdf3e9f91f62931dda6440bc6817aa/docs/evidence/studionet/artifacts/provenance-step-plan.txt",
       "digest": "sha256:f96348368685c3bd8ec05a81d6badfcb08ec5d211790caeed2523756aa4d7dc2"
     },
     "step-build": {
-      "url": "https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/106fb2145d71ee1401ff7dec9297ddc3137def4c/docs/evidence/studionet/artifacts/provenance-step-build.txt",
+      "url": "https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/4c0925a641bdf3e9f91f62931dda6440bc6817aa/docs/evidence/studionet/artifacts/provenance-step-build.txt",
       "digest": "sha256:8462daebfa75fec53cb1ca6bc9125cc3725ba1b28afdb347f7663564d22f385c"
     }
   },
@@ -18,7 +18,7 @@
     {
       "label": "create funded workflow",
       "functionName": "create_workflow",
-      "tx_hash": "0xc3484d58e3cf99a09552b1b4b6f4d5984f9ab39b61d513ea4bd9bf807e5a270d",
+      "tx_hash": "0x56aba86f351da98d72dcc73bee1063136549746bb9a9f5ac2bfefcc0e44c4749",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "2 GEN"
@@ -26,7 +26,7 @@
     {
       "label": "add plan step",
       "functionName": "add_step",
-      "tx_hash": "0xae8bed2e84c7636d6f884dc31ce62bedc023d7642f851588989730199a3d886e",
+      "tx_hash": "0x0e25ffc90faab6a61d2fe5adaf9ab62fbcc05037317b3b6170ceaac4ebb55ea5",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -34,7 +34,7 @@
     {
       "label": "add build step",
       "functionName": "add_step",
-      "tx_hash": "0x85182a2749b47ffd9aee14c1719fa68a3014599ad7a46ae2b239f3ba42a614a3",
+      "tx_hash": "0xaf92aa430c64d4d27fd3b21b5686ea5716f8b3789a525358818f471e59a14216",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -42,7 +42,7 @@
     {
       "label": "activate workflow",
       "functionName": "activate_workflow",
-      "tx_hash": "0xc96a753b36a51daf034e65a539dde78259d195de078384d0463b843f548a288b",
+      "tx_hash": "0xbbeb12e1321f108bcf6e8c0c171fd43c28a98b4dd00e55a68cb648b6fee84f84",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -50,7 +50,7 @@
     {
       "label": "accept step-plan",
       "functionName": "accept_step",
-      "tx_hash": "0xf76fbf203ff82d850862d74cbf85a89d7b89ddf82c8e8b6a2a4a55da731c6ea4",
+      "tx_hash": "0x79f4c6b5768487b9342e586b226937926d5322d55958ab407a83f9ed8652ea9c",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "1 GEN"
@@ -58,7 +58,7 @@
     {
       "label": "accept step-build",
       "functionName": "accept_step",
-      "tx_hash": "0x2b2431bfcb7ea5deed04bc57e9448e438b133fc4033ccbe3542b164f4c37293e",
+      "tx_hash": "0xa2ebeab6f67b3713452cf70b6ae3854dc5447a02880257e09abe8de219acde97",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "1 GEN"
@@ -66,7 +66,7 @@
     {
       "label": "submit evidence step-plan",
       "functionName": "submit_evidence",
-      "tx_hash": "0xad8e1f7be872e571f630ae6eca6953261d69d642e165d772755ce98f5c42d1da",
+      "tx_hash": "0xae97f10eb51c08eaab2d6ad02d91fb2cfffe22a1d9a0574f35bb005a5491e126",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -74,7 +74,7 @@
     {
       "label": "submit evidence step-build",
       "functionName": "submit_evidence",
-      "tx_hash": "0xe92c3e7c48d317b1ab26515814b098b70b22d954dc250431655e21b59e4d8aa4",
+      "tx_hash": "0xf8b46ccba98b55eaf1ea7477bdc388c21b6fb4997efb5024d829c73c0c2df13e",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -82,7 +82,7 @@
     {
       "label": "lock evidence",
       "functionName": "lock_evidence",
-      "tx_hash": "0x29defa140cbced2d9dc8b33f3ad8b703949faf78ce2c10a6ae01e35cb441853c",
+      "tx_hash": "0xfaa790d60c9e668d0a069dd405302878755fd8e630f092fd6edf2fc1137abbb9",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -90,7 +90,7 @@
     {
       "label": "request review",
       "functionName": "request_review",
-      "tx_hash": "0x3b136ceb1861b57875c1eca92a865371bc4334db0bd2efdc78bcd3ce327ca354",
+      "tx_hash": "0x728a778ddc2bb29783b8ff36ae55be3d37651ba2169cdab9c269146f030f80bc",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -98,7 +98,7 @@
     {
       "label": "withdraw provider credit",
       "functionName": "withdraw_credit",
-      "tx_hash": "0x9c9e411ad5bc64fa862a0a91b125c3b2a621d3215f7d752ca6f45fc5a596f41c",
+      "tx_hash": "0xb7001282a5da9e48ca2e6db48da232f8a76f667d2fc90d8cd6e255a698b48f25",
       "status": "FINALIZED",
       "consensus_result": "MAJORITY_AGREE",
       "value_gen": "0 GEN"
@@ -116,7 +116,7 @@
     "consequence_class": "PAY_ALL",
     "coverage": "COMPLETE",
     "finalized": true,
-    "reason": "Both required steps are present in order and each has a matching TraceSettle attestation for workflow_id trace-live-20260822-a, the declared step_id, the same provider, and a consistent objective_hash. step-plan provides evidence that a bounded itinerary satisfying the sponsor objective was produced. step-build depends on step-plan and provides evidence that booking-ready handoff notes were produced using that plan. No dependency break, contradiction, or material fault is shown in the provided public evidence. Artifact text is treated as untrusted provider-controlled evidence only and does not alter policy or settlement authority.",
+    "reason": "Both steps (step-plan and step-build) satisfy their respective promises based on the provided evidence. The workflow objective is met without material faults or untrusted artifacts influencing policy, authority, or settlement rules.",
     "root_cause_steps": "",
     "verdict": "SUCCESS"
   },
@@ -130,7 +130,7 @@
       "bond": "0",
       "dependencies": "none",
       "digest": "sha256:f96348368685c3bd8ec05a81d6badfcb08ec5d211790caeed2523756aa4d7dc2",
-      "evidence_url": "https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/106fb2145d71ee1401ff7dec9297ddc3137def4c/docs/evidence/studionet/artifacts/provenance-step-plan.txt",
+      "evidence_url": "https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/4c0925a641bdf3e9f91f62931dda6440bc6817aa/docs/evidence/studionet/artifacts/provenance-step-plan.txt",
       "promise": "Produce a bounded itinerary that satisfies the sponsor objective.",
       "provider": "0x45aD397c438397A702B53a7499a78D08961D39Db",
       "step_class": "SATISFIED"
@@ -140,7 +140,7 @@
       "bond": "0",
       "dependencies": "step-plan",
       "digest": "sha256:8462daebfa75fec53cb1ca6bc9125cc3725ba1b28afdb347f7663564d22f385c",
-      "evidence_url": "https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/106fb2145d71ee1401ff7dec9297ddc3137def4c/docs/evidence/studionet/artifacts/provenance-step-build.txt",
+      "evidence_url": "https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/4c0925a641bdf3e9f91f62931dda6440bc6817aa/docs/evidence/studionet/artifacts/provenance-step-build.txt",
       "promise": "Use the trip plan to produce booking-ready handoff notes.",
       "provider": "0x45aD397c438397A702B53a7499a78D08961D39Db",
       "step_class": "SATISFIED"
@@ -149,6 +149,6 @@
   "provider_credit_before_withdraw_gen": "4 GEN",
   "provider_credit_after_withdraw_gen": "0 GEN",
   "lifecycle_result": "SUCCESS",
-  "captured_at": "2026-08-22T06:27:13.853Z",
+  "captured_at": "2026-08-22T06:42:38.194Z",
   "evidence_limit": "allowlisted lifecycle fields only; full receipts intentionally not stored"
 }

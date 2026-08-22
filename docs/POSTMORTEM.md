@@ -8,7 +8,7 @@
 - The contract source is ASCII, has the required header, imports `from genlayer import *`, and contains exactly one validator-visible `gl.Contract` subclass.
 - `npm run check` passes contract lint, direct tests, deployment parser tests, frontend tests, and production build.
 - Local provenance remediation now treats provider artifact text as untrusted input and rejects missing or mismatched provenance binding before settlement.
-- Provenance-gate Studionet deployment finalized with `SUCCESS` at `0xC9C9b344E292AC9fc3204165A992f05E2BB00186`.
+- Provenance-gate Studionet deployment finalized with `SUCCESS` at `0xC125348c60768552Aa51D9E8d00a59e326958a17`.
 - Script-signed Studionet lifecycle settled workflow `trace-live-20260822-a` with verdict `SUCCESS`, consequence `PAY_ALL`, and provider credit withdrawn to `0 GEN`.
 - Chrome read-only smoke on production shows the remediated contract address, `/genlayer-rpc`, EVM wallet RPC, and zero console errors.
 - Vercel production deployment `dpl_3TyT3wxgV3UafeC6NXo4atiA5zhk` is live and configured with the remediated contract address.
