@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { createAccount, createClient } from "genlayer-js";
@@ -7,18 +8,12 @@ import { deploymentPath, discoverEnv, projectRoot } from "./deploy-common.mjs";
 import { summarizeReceipt } from "./receipt-parser.mjs";
 
 const GEN = 10n ** 18n;
-const workflowId = "trace-live-20260812-c";
+const workflowId = "trace-live-20260822-a";
 const lifecyclePath = resolve(projectRoot, "docs", "evidence", "studionet", "lifecycle.json");
 
-const evidence = {
-  "step-plan": {
-    url: "https://gist.githubusercontent.com/duclucky/a50b8d34dfe2e57f3e603910a7f17d72/raw/bbebb23e63c818c5b920d4212a1d1448dcf5ac36/tracesettle-step-plan.txt",
-    digest: "sha256:8a423d978dcee3b4a6fdb6bc1d75981101b14281058e9b7b227d1fada02756bf"
-  },
-  "step-build": {
-    url: "https://gist.githubusercontent.com/duclucky/a50b8d34dfe2e57f3e603910a7f17d72/raw/85edad93c9eb26cedfa10da2dc62c68d86923edf/tracesettle-step-build.txt",
-    digest: "sha256:d63d0e3b1fc6675d36627563f2c7b75c44fbc22e01142747731cf53e79c3070c"
-  }
+const artifactFiles = {
+  "step-plan": "provenance-step-plan.txt",
+  "step-build": "provenance-step-build.txt"
 };
 
 let lastRpcAt = 0;
@@ -82,6 +77,26 @@ function readExistingLifecycle(contractAddress) {
 
 function genString(baseUnits) {
   return `${Number(BigInt(baseUnits) / GEN)} GEN`;
+}
+
+function sha256(text) {
+  return createHash("sha256").update(text).digest("hex");
+}
+
+function buildEvidence(commit) {
+  return Object.fromEntries(
+    Object.entries(artifactFiles).map(([stepId, fileName]) => {
+      const artifactPath = resolve(projectRoot, "docs", "evidence", "studionet", "artifacts", fileName);
+      const artifactText = readFileSync(artifactPath, "utf8");
+      return [
+        stepId,
+        {
+          url: `https://raw.githubusercontent.com/duclucky/tracesettle-genlayer/${commit}/docs/evidence/studionet/artifacts/${fileName}`,
+          digest: `sha256:${sha256(artifactText)}`
+        }
+      ];
+    })
+  );
 }
 
 function calldataAddress(address) {
@@ -164,6 +179,7 @@ async function read(client, address, functionName, args) {
 
 const deployment = readDeployment();
 const contractAddress = deployment.contract_address;
+const evidence = buildEvidence(deployment.commit);
 const existing = readExistingLifecycle(contractAddress);
 
 const sponsor = createAccount(key("STUDIONET_PRIVATE_KEY"));

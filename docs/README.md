@@ -70,7 +70,7 @@ Settle the failed workflow, not the loudest accusation.
 | Differentiation | PASS | Unlike bilateral escrow, access bonds, slot clearing, or successor transfer, TraceSettle classifies a multi-provider dependency graph after artifacts exist. |
 | Claim-to-code | PASS | Every product claim maps to planned writes, views, tests, and evidence in the implementation plan; Phase 4 locks exact method names before contract code. |
 | Full lifecycle | PASS | Planned lifecycle covers create, fund, accept, submit, lock, review, settle or retry, cancel, and withdraw. |
-| Scope honesty | PASS | V1 now claims local tests, remediated Studionet deployment, script-signed lifecycle evidence, Chrome read-only production smoke, public repo, Vercel availability, and RPC proxy evidence; it does not claim remediated browser-wallet writes, legal liability, offchain execution proof, private evidence, external adoption, Portal acceptance, CI, or demo video. |
+| Scope honesty | PASS | V1 now claims local tests, earlier remediated Studionet deployment, script-signed lifecycle evidence for that deployed revision, Chrome read-only production smoke, public repo, Vercel availability, and RPC proxy evidence. The new provenance-gate source revision is locally verified but not yet redeployed; it does not claim fresh provenance-gate Studionet lifecycle, remediated browser-wallet writes, legal liability, offchain execution proof, private evidence, external adoption, Portal acceptance, CI, or demo video. |
 
 ## Actors, roles and incentives
 
@@ -318,11 +318,16 @@ CANCELLED --withdraw_credit/credited actor--> CANCELLED
 
 ## Evidence policy
 
-- Authoritative sources: provider-submitted HTTPS artifact URLs from an allowed
-  host/path policy locked in the workflow.
+- Artifact availability source: provider-submitted HTTPS artifact URLs from an
+  allowed host/path policy locked in the workflow. These URLs are not treated as
+  authoritative truth sources by themselves.
 - Provenance/authentication: the provider wallet transaction binds workflow ID,
-  step ID, URL, digest, dependency IDs, and attempt nonce. This authenticates
-  the provider's own offered deliverable only.
+  step ID, URL, digest, dependency IDs, and attempt nonce. The fetched artifact
+  must also contain the V1 `TRACESETTLE_ATTESTATION` envelope binding the text
+  to the canonical workflow objective hash, workflow ID, step ID, and provider
+  wallet. The digest is enforced separately by recomputing the raw fetched text
+  before the envelope check. This authenticates the provider's own offered
+  deliverable only, not external real-world truth.
 - Authorized attestor/signer: assigned provider address for each step.
 - Anti-replay event/digest identity: `workflow_id`, `step_id`, `review_nonce`,
   URL, digest, dependency snapshot, and submitter.
@@ -344,6 +349,9 @@ CANCELLED --withdraw_credit/credited actor--> CANCELLED
 - Invalid/unverifiable attestation: non-penalizing `UNVERIFIABLE`/`RETRYABLE`.
 - Prompt-injection boundary: fetched artifact text cannot add policies, step
   IDs, classes, destinations, or transfer rules; only locked workflow data can.
+- Provider-controlled text boundary: important claims that require outside truth
+  must be supported by approved sources or signed attestations. Missing proof is
+  non-penalizing and cannot settle GEN.
 - Private/unverifiable evidence excluded: private sources, screenshots, and
   self-reported logs without the locked URL/digest path are not accepted.
 
@@ -353,6 +361,7 @@ CANCELLED --withdraw_credit/credited actor--> CANCELLED
 | --- | --- | --- | --- | --- | --- | --- |
 | Provider identity for step | Outsider or wrong provider | Locked step provider address | `gl.message.sender` equals provider | workflow ID and step ID in storage | Reject write | wrong provider accept and submit |
 | Artifact content bytes | Provider or host operator | Exact fetched HTTPS response | Recompute digest from fetched raw content | URL, digest, review nonce | `UNVERIFIABLE`, no settlement | digest mismatch |
+| Artifact provenance binding | Provider or host operator | Provider wallet submission plus V1 attestation envelope | Envelope must bind workflow ID, step ID, provider, and objective hash; digest is recomputed separately | workflow ID, step ID, provider, objective hash, URL, digest | `UNVERIFIABLE`, no settlement | missing envelope and wrong objective hash |
 | Dependency snapshot | Provider | Locked step DAG and evidence records | Dependency IDs must match locked dependencies and submitted evidence | workflow ID, step ID, review nonce | Reject evidence or classify retryable | unknown dependency |
 | Evidence timing | Provider | Contract state and transaction context | Evidence allowed only while `OPEN` before lock | status and submission timestamp | Reject write | submit after lock |
 | Settlement destination | Any participant | Deterministic contract rules | Derived from locked classes and root-cause set | settlement flag and workflow ID | Reject or no duplicate credit | duplicate settlement and accounting invariant |
@@ -361,11 +370,12 @@ CANCELLED --withdraw_credit/credited actor--> CANCELLED
 
 ### Leader task
 
-- Inputs: workflow objective, locked step promises, dependencies, provider
+- Inputs: canonical workflow objective, locked step promises, dependencies, provider
   addresses, evidence URLs, digests, fetched artifact bodies, and review nonce.
-- Fetch: `gl.nondet.web.get(url)` for each locked evidence URL.
-- Extraction: recompute digest before prompt; pass only bounded text summaries
-  and locked step records to the LLM.
+- Fetch: `gl.nondet.web.render(url, mode="text")` for each locked evidence URL.
+- Extraction: recompute digest and verify the provenance envelope before prompt;
+  pass the canonical objective, locked step records, and untrusted artifact text
+  boundary to the LLM.
 - Normalization: drop unknown keys, sort step IDs, cap rationale length, and
   map invalid enums to `UNVERIFIABLE`.
 - Structured output: JSON with workflow ID, attempt ID, coverage, workflow
@@ -472,6 +482,8 @@ change value destinations or legal actions.
 - Isolation: two workflows with same step IDs do not collide.
 - Evidence failure: missing, malformed, unavailable, digest-mismatched, and
   contradictory evidence cannot settle.
+- Provenance failure: missing attestation envelope or wrong workflow objective
+  hash cannot settle and leaves accounting unchanged.
 - Malicious leader: missing step, unknown step, changed root cause, invalid enum,
   and mismatched consequence class fail validation.
 - Prompt injection: artifact text cannot expand policy, root causes, or value
@@ -492,7 +504,7 @@ change value destinations or legal actions.
 | --- | --- | --- | --- | --- |
 | Sponsor funds a bounded workflow with 2 GEN | `create_workflow`, DRAFT | `get_workflow` | wrong value, duplicate ID, stored pool | Studionet create tx and read |
 | Providers post 1 GEN bonds | `accept_step`, OPEN | `get_step` | wrong caller, wrong value, duplicate accept | Studionet accept tx and read |
-| Evidence is bound to provider and digest | `submit_evidence` | `get_step`, `get_attempt` | wrong provider, digest mismatch, unknown dependency | Studionet submit tx and read |
+| Evidence is bound to provider, objective, and digest | `submit_evidence`, `request_review` | `get_step`, `get_attempt` | wrong provider, digest mismatch, missing provenance, wrong objective hash | Local direct tests; fresh Studionet evidence pending for provenance gate |
 | Validators classify step satisfaction and root cause | `request_review`, `retry_review` | `get_attempt` | malicious leader, semantic mismatch, prompt injection | Studionet review tx and attempt read |
 | Unverifiable evidence is non-penalizing | `request_review`, RETRYABLE | `get_workflow`, `get_credit` | source outage, digest mismatch, zero credit movement | Studionet retryable lifecycle |
 | Settlement opens deterministic credits | settlement branch in review | `get_credit` | success, material failure, accounting invariant | Studionet settled lifecycle |
@@ -576,11 +588,13 @@ Production frontend evidence is recorded in
 
 TraceSettle currently claims approved design, one GenVM contract, direct tests,
 frontend design-system artifacts, local frontend evidence, SDK/wallet/read-path
-integration, remediated Studionet deployment, script-signed Studionet lifecycle
-evidence, Chrome read-only production smoke, public repo, Vercel deployment,
-and local/production RPC proxy evidence. It does not yet claim remediated
-browser-wallet writes, Portal submission, Portal acceptance, CI, demo video, or
-external adoption.
+integration, earlier remediated Studionet deployment, script-signed Studionet
+lifecycle evidence for that deployed revision, Chrome read-only production smoke,
+public repo, Vercel deployment, and local/production RPC proxy evidence. The
+new provenance-gate source revision is locally verified but not yet redeployed.
+It does not yet claim fresh provenance-gate Studionet lifecycle evidence,
+remediated browser-wallet writes, Portal submission, Portal acceptance, CI, demo
+video, or external adoption.
 
 ## Kill criteria
 

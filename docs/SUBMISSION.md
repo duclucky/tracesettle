@@ -6,9 +6,9 @@ Recommended category: Projects
 
 Title: TraceSettle
 
-Notes / Description (981 chars):
+Notes / Description:
 
-TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider AI workflows. A sponsor funds 2 GEN, providers post 1 GEN bonds and submit public artifact evidence. The Intelligent Contract fetches locked evidence, recomputes digests, enforces coverage/root/class invariants before any settlement credit, asks validators to classify satisfaction/root cause/coverage, and opens deterministic GEN credits/refunds/withdrawals. Verified: one TraceSettleContract, 14 direct tests, 3 deployment/config tests, 59 frontend tests, npm run check passing, remediated contract deployment SUCCESS on Studionet, script-signed lifecycle settled SUCCESS and withdrew provider credit to 0 GEN, EVM wallet RPC + same-origin GenLayer RPC proxy configured and production-verified, public GitHub repo, and Vercel production app. Limitations: remediated browser-wallet writes, demo video, CI, Portal acceptance, external adoption, private evidence, and legal arbitration are not claimed.
+TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider AI workflows. A sponsor funds 2 GEN, providers post 1 GEN bonds, and each provider submits public artifact evidence with a provenance envelope. The Intelligent Contract fetches locked evidence, recomputes digests, treats artifact text as untrusted input, verifies binding to the canonical workflow objective, workflow ID, step ID, and provider wallet, then asks validators to classify satisfaction, root cause, and coverage. GEN credits, refunds, and withdrawals open only after provenance and settlement invariants pass. External truth claims require approved sources or signed attestations; missing proof stays retryable or unverifiable.
 
 ## Evidence
 
@@ -26,7 +26,7 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 
 - Contracts: 1 (`TraceSettleContract`)
 - Contract methods: 16 (6 view, 10 write)
-- Direct tests: 14 passed
+- Direct tests: 19 passed
 - Deployment/config tests: 3 passed
 - Frontend tests: 59 passed
 - Network: Studionet
@@ -40,12 +40,14 @@ TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider 
 - Provider credit before withdrawal: `4 GEN`
 - Provider credit after withdrawal: `0 GEN`
 - Browser-wallet workflow: prior deployment only; not claimed as remediated-contract proof.
+- Provenance-gate contract change: locally verified, not yet redeployed to Studionet.
 - Local RPC remediation: `http://127.0.0.1:5173/genlayer-rpc` returned status 200 and `{"jsonrpc":"2.0","result":"0xf22f","id":1}`.
 - Production RPC remediation: `https://tracesettle-genlayer.vercel.app/genlayer-rpc` returned status 200 and `{"jsonrpc":"2.0","result":"0xf22f","id":1}`.
 
 ## Honest limitations / pending
 
 - Remediated browser-wallet writes are pending a fresh user-signed browser lifecycle.
+- Fresh provenance-gate Studionet deployment and lifecycle are pending.
 - Demo video is pending.
 - Portal submission and Portal acceptance are not claimed.
 - External adoption is not claimed.

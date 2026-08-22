@@ -72,3 +72,12 @@ def test_review_path_fetches_evidence_checks_digest_and_maps_value():
     assert "DOWNSTREAM_BLOCKED" in text
     assert "_settle_success" in text
     assert "_settle_material_failure" in text
+
+
+def test_review_path_verifies_artifact_provenance_before_settlement_prompt():
+    text = source()
+    assert "WORKFLOW_OBJECTIVE" in text
+    assert "UNTRUSTED_PROVIDER_ARTIFACT_TEXT" in text
+    assert "TRACESETTLE_ATTESTATION" in text
+    assert "_artifact_provenance_valid" in text
+    assert "_objective_hash" in text

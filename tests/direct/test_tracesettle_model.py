@@ -1,4 +1,5 @@
 import pytest
+import hashlib
 
 from tracesettle_model import (
     GEN,
@@ -15,6 +16,31 @@ CANCEL = "0xcancel"
 OUTSIDER = "0xoutsider"
 
 
+def objective_hash(objective: str) -> str:
+    return "sha256:" + hashlib.sha256(objective.encode()).hexdigest()
+
+
+def artifact_for(model: TraceSettleModel, workflow_id: str, step_id: str) -> str:
+    workflow = model.workflow(workflow_id)
+    step = workflow.steps[step_id]
+    return "\n".join(
+        [
+            "TRACESETTLE_ATTESTATION",
+            f"workflow_id={workflow_id}",
+            f"step_id={step_id}",
+            f"provider={step.provider}",
+            f"objective_hash={objective_hash(workflow.objective)}",
+            "claim=provider says the promised work is complete",
+        ]
+    )
+
+
+def set_valid_artifacts(model: TraceSettleModel, workflow_id: str) -> None:
+    workflow = model.workflow(workflow_id)
+    for step_id in workflow.steps:
+        workflow.steps[step_id].artifact_text = artifact_for(model, workflow_id, step_id)
+
+
 def seeded_workflow() -> TraceSettleModel:
     model = TraceSettleModel()
     model.create_workflow(SPONSOR, "trace-1", "Ship a bounded agent workflow", 2 * GEN)
@@ -28,6 +54,7 @@ def seeded_workflow() -> TraceSettleModel:
     model.submit_evidence(PLAN, "trace-1", "plan", "https://evidence.example/plan.json", "sha256:plan")
     model.submit_evidence(BUILD, "trace-1", "build", "https://evidence.example/build.json", "sha256:build")
     model.submit_evidence(CANCEL, "trace-1", "cancel", "https://evidence.example/cancel.json", "sha256:cancel")
+    set_valid_artifacts(model, "trace-1")
     model.lock_evidence(SPONSOR, "trace-1")
     return model
 
@@ -188,6 +215,7 @@ def test_material_failure_settlement_credits_pool_rounding_residual_to_sponsor()
     model.accept_step(BUILD, "trace-round", "b", GEN)
     model.submit_evidence(PLAN, "trace-round", "a", "https://evidence.example/a.json", "sha256:a")
     model.submit_evidence(BUILD, "trace-round", "b", "https://evidence.example/b.json", "sha256:b")
+    set_valid_artifacts(model, "trace-round")
     model.lock_evidence(SPONSOR, "trace-round")
 
     model.request_review(
@@ -201,3 +229,71 @@ def test_material_failure_settlement_credits_pool_rounding_residual_to_sponsor()
 
     assert model.locked_total("trace-round") == 0
     assert model.credit(SPONSOR) == (2 * GEN // 3) + 1
+
+
+def test_provider_controlled_text_without_provenance_cannot_settle():
+    model = seeded_workflow()
+    before_locked = model.locked_total("trace-1")
+    model.workflow("trace-1").steps["build"].artifact_text = "provider says build succeeded"
+
+    model.request_review(
+        SPONSOR,
+        "trace-1",
+        ReviewResult.success(["plan", "build", "cancel"]),
+    )
+
+    assert model.workflow("trace-1").status == "RETRYABLE"
+    assert model.locked_total("trace-1") == before_locked
+    assert model.credit(PLAN) == 0
+    assert model.credit(BUILD) == 0
+    assert model.credit(CANCEL) == 0
+
+
+def test_wrong_objective_hash_provenance_cannot_settle():
+    model = seeded_workflow()
+    before_locked = model.locked_total("trace-1")
+    step = model.workflow("trace-1").steps["plan"]
+    step.artifact_text = "\n".join(
+        [
+            "TRACESETTLE_ATTESTATION",
+            "workflow_id=trace-1",
+            "step_id=plan",
+            f"provider={step.provider}",
+            "objective_hash=sha256:wrong",
+        ]
+    )
+
+    model.request_review(
+        SPONSOR,
+        "trace-1",
+        ReviewResult.success(["plan", "build", "cancel"]),
+    )
+
+    assert model.workflow("trace-1").status == "RETRYABLE"
+    assert model.locked_total("trace-1") == before_locked
+    assert model.credit(SPONSOR) == 0
+    assert model.credit(PLAN) == 0
+
+
+def test_valid_provenance_does_not_require_self_referential_digest_line():
+    model = seeded_workflow()
+    plan = model.workflow("trace-1").steps["plan"]
+    assert f"digest={plan.digest}" not in plan.artifact_text
+
+    model.request_review(
+        SPONSOR,
+        "trace-1",
+        ReviewResult.success(["plan", "build", "cancel"]),
+    )
+
+    assert model.workflow("trace-1").status == "SETTLED"
+    assert model.locked_total("trace-1") == 0
+
+
+def test_canonical_objective_is_part_of_review_context():
+    model = seeded_workflow()
+
+    context = model.review_context("trace-1")
+
+    assert "WORKFLOW_OBJECTIVE Ship a bounded agent workflow" in context
+    assert "UNTRUSTED_PROVIDER_ARTIFACT_TEXT" in context

@@ -4,7 +4,8 @@ Settle the failed workflow, not the loudest accusation.
 
 TraceSettle is a GenLayer Projects-track application for multi-provider
 workflow settlement. A sponsor funds a bounded workflow in GEN, assigned
-providers post 1 GEN bonds and submit public artifact evidence, and one
+providers post 1 GEN bonds and submit public artifact evidence with a bounded
+provenance envelope, and one
 Intelligent Contract asks validators to classify step satisfaction, root cause,
 coverage, and the deterministic settlement consequence.
 
@@ -15,6 +16,8 @@ one coordinator in control of blame and payout. TraceSettle puts the disputed
 semantic question inside a GenLayer Intelligent Contract: validators
 independently fetch the locked evidence, recompute the submitted digest, agree
 on the meaning of the artifact set, and only then apply the settlement rule.
+Provider-controlled artifact text is treated as untrusted input. It cannot
+create policy, source authority, payout rules, or settlement destinations.
 
 Validators inspect:
 
@@ -22,6 +25,9 @@ Validators inspect:
   provider wallets;
 - public HTTPS artifact URLs and SHA-256 digests submitted by the provider
   wallet before evidence lock;
+- the artifact provenance envelope binding the fetched text to the canonical
+  workflow objective hash, workflow ID, step ID, and provider wallet, with the
+  raw content digest recomputed separately;
 - whether each step is satisfied, materially faulty, downstream-blocked, or
   unverifiable;
 - the exact root-cause step set, source coverage, verdict, and deterministic
@@ -47,8 +53,11 @@ instead of treating wallet submission as success.
 - Provider credit: `4 GEN` before withdrawal, `0 GEN` after withdrawal
 - Browser-wallet workflow: prior evidence on superseded deployment; not claimed
   as remediated-contract browser write proof.
-- Current local check: 1 contract, 14 direct tests, 3 deployment/config tests,
+- Current local check: 1 contract, 19 direct tests, 3 deployment/config tests,
   59 frontend tests, production build passing
+- Provenance remediation: local contract source now rejects missing or mismatched
+  artifact provenance before settlement. This source change needs a fresh
+  Studionet deployment before it can be claimed as network evidence.
 - Reviewer remediation: frontend wallet writes now switch/add GenLayer EVM
   chain `0x107d` with RPC `https://rpc.testnet-chain.genlayer.com`; GenLayer
   IC reads use same-origin `/genlayer-rpc` proxy to avoid browser CORS on
@@ -130,12 +139,14 @@ authorized parent workspace `.env`, and never print private key values.
 
 ## Honest limits
 
-This repository proves local checks, remediated Studionet deployment,
-script-signed Studionet lifecycle evidence, public repository availability,
-production frontend availability, same-origin RPC proxy behavior, and Chrome
-read-only smoke on the remediated deployment. It does not claim remediated
-browser-wallet writes, legal arbitration, private evidence support, offchain
-execution proof, Portal acceptance, CI, demo video, or external adoption.
+This repository proves local checks, the earlier remediated Studionet deployment,
+script-signed Studionet lifecycle evidence for that deployed revision, public
+repository availability, production frontend availability, same-origin RPC proxy
+behavior, and Chrome read-only smoke. The new provenance-gate contract change is
+locally verified but not yet redeployed. It does not claim fresh provenance-gate
+Studionet lifecycle evidence, remediated browser-wallet writes, legal
+arbitration, private evidence support, offchain execution proof, Portal
+acceptance, CI, demo video, or external adoption.
 
 ## Copy-ready submission
 
@@ -145,7 +156,7 @@ execution proof, Portal acceptance, CI, demo video, or external adoption.
 
 **Description:**
 
-TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider AI workflows. A sponsor funds 2 GEN, providers post 1 GEN bonds and submit public artifact evidence. The Intelligent Contract fetches locked evidence, recomputes digests, enforces coverage/root/class invariants before any settlement credit, asks validators to classify satisfaction/root cause/coverage, and opens deterministic GEN credits/refunds/withdrawals. Verified: one TraceSettleContract, 14 direct tests, 3 deployment/config tests, 59 frontend tests, npm run check passing, remediated contract deployment SUCCESS on Studionet, script-signed lifecycle settled SUCCESS and withdrew provider credit to 0 GEN, EVM wallet RPC + same-origin GenLayer RPC proxy configured and production-verified, public GitHub repo, and Vercel production app. Limitations: remediated browser-wallet writes, demo video, CI, Portal acceptance, external adoption, private evidence, and legal arbitration are not claimed.
+TraceSettle is a Studionet dApp for evidence-based settlement of multi-provider AI workflows. A sponsor funds 2 GEN, providers post 1 GEN bonds and submit public artifact evidence with a provenance envelope. The Intelligent Contract fetches locked evidence, recomputes digests, treats artifact text as untrusted input, verifies binding to the canonical workflow objective, provider, and step, asks validators to classify satisfaction/root cause/coverage, and opens deterministic GEN credits/refunds/withdrawals only after settlement invariants pass. External truth claims require approved sources or signed attestations; missing proof stays retryable or unverifiable.
 
 **Short report:**
 

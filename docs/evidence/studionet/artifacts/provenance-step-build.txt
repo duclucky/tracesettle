@@ -1,0 +1,16 @@
+TRACESETTLE_ATTESTATION
+workflow_id=trace-live-20260822-a
+step_id=step-build
+provider=0x45aD397c438397A702B53a7499a78D08961D39Db
+objective_hash=sha256:26fed9f8bc51b0a5ff672e8665fc3a851f9bba6b3f02bf6c09d08f70cecd2371
+
+Artifact summary:
+The provider used the itinerary to produce booking-ready handoff notes.
+
+Evidence:
+- The handoff references the planned trip context from step-plan.
+- It lists booking constraints, traveler-facing notes, and cancellation considerations.
+- The output is consistent with the sponsor objective and does not introduce a new workflow objective.
+
+Claim boundary:
+This text is provider-controlled evidence. It does not create policy, authority, payout rules, or settlement destinations.

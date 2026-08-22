@@ -1,0 +1,16 @@
+TRACESETTLE_ATTESTATION
+workflow_id=trace-live-20260822-a
+step_id=step-plan
+provider=0x45aD397c438397A702B53a7499a78D08961D39Db
+objective_hash=sha256:26fed9f8bc51b0a5ff672e8665fc3a851f9bba6b3f02bf6c09d08f70cecd2371
+
+Artifact summary:
+The provider produced a bounded itinerary for the sponsor objective.
+
+Evidence:
+- The trip objective is answered with a concrete two-step travel planning output.
+- The itinerary defines destination choice, timing, and user-facing constraints.
+- The output is sufficient for the dependent booking handoff step to continue.
+
+Claim boundary:
+This text is provider-controlled evidence. It does not create policy, authority, payout rules, or settlement destinations.

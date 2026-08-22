@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import hashlib
 
 
 GEN = 10**18
@@ -19,6 +20,7 @@ class Step:
     bond: int = 0
     evidence_url: str = ""
     digest: str = ""
+    artifact_text: str = ""
     digest_mismatch: bool = False
     step_class: str = "PENDING"
 
@@ -202,6 +204,9 @@ class TraceSettleModel:
         if any(step.digest_mismatch for step in workflow.steps.values()):
             workflow.status = "RETRYABLE"
             return
+        if not self._all_artifact_provenance_valid(workflow):
+            workflow.status = "RETRYABLE"
+            return
         if result.verdict == "UNVERIFIABLE":
             workflow.status = "RETRYABLE"
             return
@@ -217,6 +222,46 @@ class TraceSettleModel:
     def _fee(self, workflow: Workflow, step: Step) -> int:
         total_weight = sum(item.fee_weight for item in workflow.steps.values())
         return workflow.pool * step.fee_weight // total_weight
+
+    def _objective_hash(self, objective: str) -> str:
+        return "sha256:" + hashlib.sha256(objective.encode()).hexdigest()
+
+    def _artifact_provenance_valid(self, workflow: Workflow, step: Step) -> bool:
+        required_lines = {
+            "TRACESETTLE_ATTESTATION",
+            f"workflow_id={workflow.workflow_id}",
+            f"step_id={step.step_id}",
+            f"provider={step.provider}",
+            f"objective_hash={self._objective_hash(workflow.objective)}",
+        }
+        artifact_lines = set(step.artifact_text.splitlines())
+        return required_lines.issubset(artifact_lines)
+
+    def _all_artifact_provenance_valid(self, workflow: Workflow) -> bool:
+        return all(
+            self._artifact_provenance_valid(workflow, step)
+            for step in workflow.steps.values()
+        )
+
+    def review_context(self, workflow_id: str) -> str:
+        workflow = self._workflow(workflow_id)
+        rows = [
+            f"WORKFLOW_ID {workflow.workflow_id}",
+            f"WORKFLOW_OBJECTIVE {workflow.objective}",
+            "UNTRUSTED_PROVIDER_ARTIFACT_TEXT",
+        ]
+        for step in workflow.steps.values():
+            rows.extend(
+                [
+                    f"STEP {step.step_id}",
+                    f"PROVIDER {step.provider}",
+                    f"PROMISE {step.promise}",
+                    f"DEPENDENCIES {','.join(step.dependencies)}",
+                    f"DIGEST {step.digest}",
+                    step.artifact_text,
+                ]
+            )
+        return "\n".join(rows)
 
     def _validate_settlement_result(self, workflow: Workflow, result: ReviewResult) -> None:
         expected = set(workflow.steps)
